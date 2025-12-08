@@ -5,14 +5,15 @@ from sqlalchemy import select
 
 async def get_user(user_id: int) -> User:
     async with AsyncSessionLocal() as session:
-        result = await session.get(User, user_id)
-        if not result:
-            result = User(id=user_id)
-            session.add(result)
+        user = await session.get(User, user_id)
+        if not user:
+            user = User(id=user_id)
+            session.add(user)
             await session.commit()
-        return result
+        return user
 
 async def save_user(user: User):
+    """Сохраняет объект User в базе"""
     async with AsyncSessionLocal() as session:
         session.add(user)
         await session.commit()
