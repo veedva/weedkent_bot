@@ -12,36 +12,42 @@ HOLD_RESPONSES = ["Понял.", "Молодец.", "Так держать.", "�
 @router.message(F.text == "✊ Держусь")
 async def hold(message: Message):
     user = await get_user(message.from_user.id)
-    
     if not user.active:
         await message.answer("Сначала ▶ Начать")
         return
 
-    today_date = today()
-    
-    # Сброс счётчика, если новый день
-    if not user.last_hold_date or user.last_hold_date != today_date:
+    today_str = today().isoformat()
+    if user.last_hold_date != today_str:
         user.hold_count_today = 0
-        user.last_hold_date = today_date
+        user.last_hold_date = today_str
 
-    # лимит 5 раз в день + не чаще 30 минут
+    # лимит 5 раз в день + не чаще раза в 30 минут
     if user.hold_count_today >= 5:
         await message.answer("Только 5 раз в день, брат. Завтра снова можно.")
         return
 
+    dt_now = now()  # может быть offset-aware
     if user.last_hold_time:
-        delta = now() - user.last_hold_time
+        # приводим last_hold_time к offset-aware, если нужно для сравнения
+        last_hold = user.last_hold_time
+        if last_hold.tzinfo is None:
+            # считаем, что без таймзоны = локальное время
+            last_hold = last_hold.replace(tzinfo=dt_now.tzinfo)
+        delta = dt_now - last_hold
         if delta.total_seconds() < 1800:
             await message.answer("Не чаще чем раз в полчаса. Ты и так молодец ✊")
             return
 
-    # обновляем данные пользователя
     user.hold_count_today += 1
-    user.last_hold_time = now()
+    # сохраняем наивный datetime, чтобы не было ошибки PostgreSQL
+    user.last_hold_time = dt_now.replace(tzinfo=None)
 
-    await save_user(user)
+    await save_user(message.from_user.id, {
+        "hold_count_today": user.hold_count_today,
+        "last_hold_time": user.last_hold_time
+    })
 
     await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
 
-    # временный пуш самому себе
+    # пуш всем активным (пока упрощённо)
     await message.bot.send_message(message.from_user.id, "✊")
