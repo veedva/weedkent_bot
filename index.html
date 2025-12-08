@@ -44,15 +44,15 @@
       cursor: pointer;
     }
     
-    /* ПРОГРЕСС БАР - ТОЛЬКО ШКАЛА */
+    /* ПРОГРЕСС БАР */
     .progress-container {
       position: absolute;
       bottom: 90px;
       left: 30px;
       right: 30px;
-      height: 10px;
+      height: 12px;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
+      border-radius: 6px;
       overflow: hidden;
       z-index: 10;
       pointer-events: none;
@@ -61,10 +61,9 @@
     
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #4dabf7, #ffa94d, #ff6b6b, #ff4757, #ffcc00, #ff3838);
       width: 0%;
-      transition: width 0.1s linear;
-      border-radius: 5px;
+      transition: width 0.1s linear, background 0.3s ease;
+      border-radius: 6px;
     }
     
     /* КНОПКА ВЫХОДА */
@@ -112,25 +111,25 @@
     .rage-word {
       font-family: 'Arial Black', Impact, sans-serif;
       letter-spacing: 1px;
-      text-shadow: 0 0 10px currentColor, 0 0 20px rgba(255, 255, 255, 0.2);
+      text-shadow: 0 0 10px currentColor, 0 0 20px rgba(255, 255, 255, 0.3);
     }
     
     .rage-emoji {
-      text-shadow: 0 0 12px currentColor, 0 0 25px rgba(255, 255, 255, 0.3);
+      text-shadow: 0 0 15px currentColor, 0 0 30px rgba(255, 255, 255, 0.4);
     }
     
     @keyframes particleFloat {
       0% {
         opacity: 1;
-        transform: translate(0, 0) scale(var(--scale)) rotate(0deg);
+        transform: translate(0, 0) scale(0.8) rotate(0deg);
       }
       40% {
         opacity: 1;
-        transform: translate(var(--dx), var(--dy)) scale(calc(var(--scale) * 1.3)) rotate(var(--rot));
+        transform: translate(var(--dx), var(--dy)) scale(1.3) rotate(var(--rot));
       }
       100% {
         opacity: 0;
-        transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) * 1.3)) scale(calc(var(--scale) * 0.3));
+        transform: translate(calc(var(--dx) * 1.5), calc(var(--dy) * 1.5)) scale(0.2);
       }
     }
     
@@ -157,21 +156,21 @@
     /* ТОЧКА УДАРА */
     .tap-hit {
       position: absolute;
-      width: 20px;
-      height: 20px;
-      background: rgba(255, 255, 255, 0.8);
+      width: 25px;
+      height: 25px;
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 50%;
       transform: translate(-50%, -50%) scale(0);
       pointer-events: none;
       z-index: 4;
-      animation: tapHitEffect 0.35s ease-out forwards;
+      animation: tapHitEffect 0.4s ease-out forwards;
       will-change: transform, opacity;
     }
     
     @keyframes tapHitEffect {
       0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-      70% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.5; }
-      100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+      70% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.6; }
+      100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
     }
     
     /* YOU DIED ЭКРАН */
@@ -317,7 +316,7 @@
   <!-- Область для тапов -->
   <div class="tap-area" id="tapArea"></div>
   
-  <!-- Прогресс-бар (без надписей) -->
+  <!-- Прогресс-бар -->
   <div class="progress-container">
     <div class="progress-bar" id="progressBar"></div>
   </div>
@@ -357,15 +356,31 @@
     let particleQueue = [];
     let lastParticleTime = 0;
     let tapCooldown = false;
-    let maxParticles = 12;
+    let maxParticles = 15; // Увеличил количество частиц
     
     // Слова и эмодзи
     const WORDS = [
       "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙ!", 
       "ПИЗДОС!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ПОШЛИ НАХУЙ!", "ЁПТА!", 
-      "БЛЯДЬ!", "УЁБИЩЕ!", "ТВАРЬ!", "ПИЗДЕЦ!", "ЗАЛУПА!", "МРАЗЬ!"
+      "БЛЯДЬ!", "УЁБИЩЕ!", "ТВАРЬ!", "ПИЗДЕЦ!", "ЗАЛУПА!", "МРАЗЬ!",
+      "ГОВНО!", "ХУЙНЯ!", "ЁБАНЫЙ!", "ЕБЁНЫЙ!", "ПРОЕБАЛ!", "ВЪЕБАТЬ!"
     ];
-    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️", "💣", "🧨"];
+    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️", "💣", "🧨", "👊", "🤯", "💀", "🖕"];
+    
+    // Цвета для прогресс-бара (от холодных к горячим)
+    const PROGRESS_COLORS = [
+      '#4dabf7',  // 0-16% - синий (холодный)
+      '#38bdf8',  // 17-33% - голубой
+      '#22d3ee',  // 34-50% - бирюзовый
+      '#0ea5e9',  // 51-66% - светло-оранжевый
+      '#f97316',  // 67-83% - оранжевый
+      '#ef4444',  // 84-100% - красный (горячий)
+    ];
+    
+    // Цвета для частиц и эффектов
+    const PARTICLE_COLORS = [
+      '#4dabf7', '#38bdf8', '#22d3ee', '#0ea5e9', '#f97316', '#ef4444', '#dc2626'
+    ];
     
     // =================== DOM ===================
     const tapArea = document.getElementById('tapArea');
@@ -410,8 +425,8 @@
     function playDamageSound() {
       if (!soundEnabled || soundCooldown) return;
       
-      // Вероятность звука зависит от уровня ярости
-      const soundChance = 0.1 + (rage / 100) * 0.25;
+      // Вероятность звука растет с яростью
+      const soundChance = 0.1 + (rage / 100) * 0.3;
       if (Math.random() > soundChance) return;
       
       try {
@@ -419,11 +434,11 @@
         currentAudioIndex = (currentAudioIndex + 1) % audioElements.length;
         
         audio.currentTime = 0;
-        audio.volume = 0.4 + (rage / 300);
+        audio.volume = 0.3 + (rage / 200);
         audio.play().catch(() => {});
         
         soundCooldown = true;
-        setTimeout(() => { soundCooldown = false; }, 150);
+        setTimeout(() => { soundCooldown = false; }, 100);
       } catch (error) {}
     }
     
@@ -440,9 +455,30 @@
     }
     
     // =================== ОСНОВНЫЕ ФУНКЦИИ ===================
-    function updateUI() {
+    function updateProgressBar() {
       const ragePercent = Math.min(rage, 100);
       progressBar.style.width = `${ragePercent}%`;
+      
+      // МЕНЯЕМ ЦВЕТ ПРОГРЕСС-БАРА В ЗАВИСИМОСТИ ОТ ПРОГРЕССА
+      let colorIndex;
+      if (ragePercent < 17) colorIndex = 0;
+      else if (ragePercent < 34) colorIndex = 1;
+      else if (ragePercent < 51) colorIndex = 2;
+      else if (ragePercent < 68) colorIndex = 3;
+      else if (ragePercent < 85) colorIndex = 4;
+      else colorIndex = 5;
+      
+      progressBar.style.background = PROGRESS_COLORS[colorIndex];
+    }
+    
+    function getCurrentColor() {
+      const ragePercent = Math.min(rage, 100);
+      if (ragePercent < 17) return PARTICLE_COLORS[0];
+      else if (ragePercent < 34) return PARTICLE_COLORS[1];
+      else if (ragePercent < 51) return PARTICLE_COLORS[2];
+      else if (ragePercent < 68) return PARTICLE_COLORS[3];
+      else if (ragePercent < 85) return PARTICLE_COLORS[4];
+      else return PARTICLE_COLORS[5];
     }
     
     function createTapHit(x, y) {
@@ -451,23 +487,20 @@
       hit.style.left = `${x}px`;
       hit.style.top = `${y}px`;
       
-      // Цвет в зависимости от уровня ярости
-      const colors = ['#4dabf7', '#ffa94d', '#ff6b6b', '#ff4757', '#ffcc00', '#ff3838'];
-      const colorIndex = Math.min(Math.floor(rage / 20), 5);
-      hit.style.background = colors[colorIndex];
+      hit.style.background = getCurrentColor();
       
       document.body.appendChild(hit);
       setTimeout(() => {
         if (hit.parentNode) hit.remove();
-      }, 350);
+      }, 400);
     }
     
     function createParticle(x, y, isEmoji) {
       const now = Date.now();
       
-      if (now - lastParticleTime < 50) {
-        particleQueue.push({ x, y, isEmoji, time: now });
-        return;
+      // Ограничение частоты создания частиц
+      if (now - lastParticleTime < 30) { // Уменьшил кд для более частых частиц
+        return; // Просто пропускаем, не добавляем в очередь
       }
       
       lastParticleTime = now;
@@ -480,32 +513,36 @@
       
       const intensity = Math.min(rage / 100, 1);
       
-      const baseSize = isEmoji ? 30 : 24;
-      const sizeMultiplier = 0.8 + (intensity * 0.8);
+      // УВЕЛИЧИЛ РАЗМЕРЫ И СИЛУ РАЗЛЕТА
+      const baseSize = isEmoji ? 35 : 28;
+      const sizeMultiplier = 0.9 + (intensity * 1.1);
       const fontSize = Math.floor(baseSize * sizeMultiplier);
       particle.style.fontSize = `${fontSize}px`;
       
-      const baseDistance = 50;
-      const distanceMultiplier = 0.7 + (intensity * 1.2);
+      // СИЛЬНЫЙ РАЗЛЕТ - увеличенная сила
+      const baseDistance = 80; // Увеличил расстояние
+      const distanceMultiplier = 0.8 + (intensity * 1.5);
       
       const angle = Math.random() * Math.PI * 2;
       const distance = baseDistance * distanceMultiplier;
       
       particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
       particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-      particle.style.setProperty('--rot', `${Math.random() * 30 - 15}deg`);
+      particle.style.setProperty('--rot', `${Math.random() * 50 - 25}deg`);
       particle.style.setProperty('--scale', sizeMultiplier);
       
-      particle.style.left = `${x}px`;
-      particle.style.top = `${y}px`;
+      // Случайное смещение от точки касания
+      const offsetX = (Math.random() * 40 - 20);
+      const offsetY = (Math.random() * 40 - 20);
       
-      // Цвет частицы в зависимости от ярости
-      const colors = ['#4dabf7', '#ffa94d', '#ff6b6b', '#ff4757', '#ffcc00', '#ff3838'];
-      const colorIndex = Math.min(Math.floor(rage / 20), 5);
-      particle.style.color = colors[colorIndex];
+      particle.style.left = `${x + offsetX}px`;
+      particle.style.top = `${y + offsetY}px`;
+      
+      particle.style.color = getCurrentColor();
       
       particlesContainer.appendChild(particle);
       
+      // Автоматическое удаление
       setTimeout(() => {
         if (particle.parentNode) {
           particle.remove();
@@ -513,13 +550,6 @@
       }, 1200);
       
       cleanupParticles();
-      
-      if (particleQueue.length > 0) {
-        const next = particleQueue.shift();
-        if (next && now - next.time < 500) {
-          setTimeout(() => createParticle(next.x, next.y, next.isEmoji), 50);
-        }
-      }
     }
     
     function createFlash() {
@@ -527,20 +557,9 @@
       flash.className = 'screen-flash';
       
       const intensity = Math.min(rage / 100, 1);
-      const opacity = 0.15 + (intensity * 0.25);
+      const opacity = 0.2 + (intensity * 0.3);
       
-      // Цвет вспышки в зависимости от ярости
-      const colors = [
-        'rgba(77, 171, 247, OPACITY)',
-        'rgba(255, 169, 77, OPACITY)',
-        'rgba(255, 107, 107, OPACITY)',
-        'rgba(255, 71, 87, OPACITY)',
-        'rgba(255, 204, 0, OPACITY)',
-        'rgba(255, 56, 56, OPACITY)'
-      ];
-      const colorIndex = Math.min(Math.floor(rage / 20), 5);
-      const color = colors[colorIndex].replace('OPACITY', opacity.toString());
-      
+      const color = getCurrentColor().replace(')', ', ' + opacity + ')').replace('rgb', 'rgba');
       flash.style.background = color;
       
       document.body.appendChild(flash);
@@ -584,11 +603,12 @@
       
       decayTimer = setTimeout(() => {
         if (rage > 0) {
-          const decayRate = 1.5 + (rage / 40);
+          // Замедляем сброс при высокой ярости
+          const decayRate = 1 + (rage / 50);
           rage = Math.max(rage - decayRate, 0);
           
           if (gameActive) {
-            updateUI();
+            updateProgressBar();
           }
           
           if (rage > 0) {
@@ -601,8 +621,9 @@
     function handleTap(x, y) {
       if (!gameActive || tapCooldown) return;
       
+      // Легкая защита от спама
       tapCooldown = true;
-      setTimeout(() => { tapCooldown = false; }, 50);
+      setTimeout(() => { tapCooldown = false; }, 30); // Уменьшил кд
       
       if (!firstTapDone) {
         firstTapDone = true;
@@ -617,31 +638,36 @@
         return;
       }
       
-      let rageGain = 3;
+      // УВЕЛИЧИЛ ПРИРОСТ ЯРОСТИ - теперь быстрее добирается до конца
+      let rageGain = 8; // Увеличил базовый прирост
+      
+      // Дополнительный бонус за быстрые клики
+      if (rage > 50) {
+        rageGain += 2; // Бонус при высокой ярости
+      }
+      
       rage = Math.min(rage + rageGain, 100);
       
       playDamageSound();
       createTapHit(x, y);
       createFlash();
       
-      const particleCount = rage > 70 ? 3 : (rage > 40 ? 2 : 1);
+      // БОЛЬШЕ ЧАСТИЦ С БОЛЬШЕЙ СИЛОЙ
+      const particleCount = rage > 70 ? 4 : (rage > 40 ? 3 : 2);
       
       for (let i = 0; i < particleCount; i++) {
         setTimeout(() => {
-          const offsetX = (Math.random() * 40 - 20);
-          const offsetY = (Math.random() * 40 - 20);
-          
-          createParticle(x + offsetX, y + offsetY, i % 2 === 0);
-        }, i * 60);
+          createParticle(x, y, Math.random() > 0.5);
+        }, i * 40);
       }
       
       if (navigator.vibrate) {
         const intensity = Math.min(rage / 100, 1);
-        const duration = Math.floor(8 + intensity * 15);
+        const duration = Math.floor(10 + intensity * 20);
         navigator.vibrate(duration);
       }
       
-      updateUI();
+      updateProgressBar();
       startDecay();
     }
     
@@ -657,7 +683,7 @@
     }, { passive: false });
     
     // =================== ИНИЦИАЛИЗАЦИЯ ===================
-    updateUI();
+    updateProgressBar();
     startDecay();
     
     setInterval(cleanupParticles, 2000);
