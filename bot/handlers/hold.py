@@ -31,12 +31,12 @@ async def hold(message: Message):
             await message.answer("Не чаще чем раз в полчаса. Ты и так молодец ✊")
             return
 
+    # обновляем поля пользователя
     user.hold_count_today += 1
     user.last_hold_time = now()
-    await save_user(user)  # ← исправлено
+    await save_user(user)  # теперь передаем объект User
 
     await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
 
-    # пуш всем активным
+    # пока упрощённо — пуш самому пользователю
     await message.bot.send_message(message.from_user.id, "✊")
-
