@@ -33,13 +33,6 @@ async def hold(message: Message):
 
     user.hold_count_today += 1
     user.last_hold_time = now()
-    await save_user(message.from_user.id, {
-        "hold_count_today": user.hold_count_today,
-        "last_hold_time": user.last_hold_time
-    })
+    await save_user(user)  # ← исправлено
 
-    await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
-
-    # пуш всем активным
-    # (пока упрощённо — в полной версии будет через Redis пул)
-    await message.bot.send_message(message.from_user.id, "✊")
+    await message.answer(random.choice(HOLD_RESPONSES)_
