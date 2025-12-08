@@ -40,6 +40,7 @@
       background: transparent;
       z-index: 1;
       cursor: pointer;
+      touch-action: manipulation;
     }
     
     .progress-container {
@@ -97,7 +98,6 @@
       opacity: 0;
       font-weight: 900;
       animation: particleFly 1.8s ease-out forwards;
-      will-change: transform, opacity;
     }
     
     .rage-word {
@@ -297,7 +297,6 @@
   </div>
 
   <script>
-    // === ИНИЦИАЛИЗАЦИЯ ===
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
     
@@ -306,41 +305,26 @@
       Telegram.WebApp.BackButton.onClick(() => Telegram.WebApp.close());
     }
     
-    // === ПЕРЕМЕННЫЕ ===
     let rage = 0;
     let gameActive = true;
     let youDiedShown = false;
     let decayInterval = null;
     let lastSoundTime = 0;
-    let lastTapTime = 0;
+    let isProcessingTap = false;
+    let tapTimeout = null;
     
-    // === ДАННЫЕ ===
-    const WORDS = [
-      "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!",
-      "ТВАРЬ!", "МРАЗЬ!", "УЁБИЩЕ!", "АХУЕТЬ!", "ЗАЛУПА!",
-      "ХУЙ!", "ПИЗДЕЦ!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "В ПИЗДУ!"
-    ];
-    
+    const WORDS = ["ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙ!", "ПИЗДЕЦ!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ЁБАНЫЙ!"];
     const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "☠️", "💣", "🧨"];
     
     const PROGRESS_COLORS = [
-      '#4dabf7',   // Синий
-      '#38bdf8',   // Голубой
-      '#22d3ee',   // Бирюзовый
-      '#fbbf24',   // Желтый
-      '#f97316',   // Оранжевый
-      '#ef4444',   // Красный
-      '#dc2626',   // Ярко-красный
-      '#991b1b'    // Темно-красный
+      '#4dabf7', '#38bdf8', '#22d3ee', '#fbbf24', '#f97316', '#ef4444', '#dc2626', '#991b1b'
     ];
     
-    // === DOM ЭЛЕМЕНТЫ ===
     const tapArea = document.getElementById('tapArea');
     const progressBar = document.getElementById('progressBar');
     const youDiedOverlay = document.getElementById('youDiedOverlay');
     const particlesContainer = document.getElementById('particlesContainer');
     
-    // === АУДИО ===
     let damageAudio = null;
     let deathAudio = null;
     let soundInitialized = false;
@@ -363,8 +347,6 @@
     
     function playDamageSound() {
       if (!damageAudio) return;
-      
-      // Звук только 20% кликов и не чаще чем раз в 400мс
       if (Math.random() > 0.2) return;
       
       const now = Date.now();
@@ -389,7 +371,6 @@
       }, 400);
     }
     
-    // === ОСНОВНЫЕ ФУНКЦИИ ===
     function getProgressColor() {
       if (rage < 20) return PROGRESS_COLORS[0];
       if (rage < 40) return PROGRESS_COLORS[1];
@@ -414,13 +395,10 @@
         : WORDS[Math.floor(Math.random() * WORDS.length)];
       
       const intensity = Math.min(rage / 100, 1);
-      
-      // Размер зависит от ярости
       const baseSize = isEmoji ? 42 : 34;
       const fontSize = Math.floor(baseSize * (0.9 + intensity * 0.6));
       particle.style.fontSize = `${fontSize}px`;
       
-      // Сильный разлет с вращением
       const power = 80 + (intensity * 100);
       const angle = Math.random() * Math.PI * 2;
       const dx = Math.cos(angle) * power;
@@ -431,22 +409,18 @@
       particle.style.setProperty('--dy', `${dy}px`);
       particle.style.setProperty('--rot', `${rotation}deg`);
       
-      // Позиция со смещением
       const offsetX = (Math.random() * 30 - 15);
       const offsetY = (Math.random() * 30 - 15);
       particle.style.left = `${x + offsetX}px`;
       particle.style.top = `${y + offsetY}px`;
-      
       particle.style.color = getProgressColor();
       
       particlesContainer.appendChild(particle);
       
-      // Автоудаление
       setTimeout(() => {
         if (particle.parentNode) particle.remove();
       }, 1800);
       
-      // Ограничение количества
       const particles = particlesContainer.querySelectorAll('.rage-particle');
       if (particles.length > 20) {
         particles[0].remove();
@@ -494,24 +468,20 @@
     function createFlash() {
       const flash = document.createElement('div');
       flash.className = 'screen-flash';
-      
       const intensity = Math.min(rage / 100, 1);
       const opacity = 0.2 + (intensity * 0.3);
       const color = getProgressColor().replace(')', `, ${opacity})`).replace('#', 'rgba(');
-      
       flash.style.background = color;
       document.body.appendChild(flash);
       setTimeout(() => flash.remove(), 300);
     }
     
     function createEffects(x, y) {
-      // Основные эффекты
       createTapHit(x, y);
       createFlash();
       createWave(x, y);
       createSparks(x, y, 5 + Math.floor(rage / 20));
       
-      // Частицы
       const particleCount = 3 + Math.floor(rage / 25);
       for (let i = 0; i < particleCount; i++) {
         setTimeout(() => {
@@ -521,7 +491,6 @@
         }, i * 80);
       }
       
-      // Вибрация
       if (navigator.vibrate) {
         const duration = Math.min(20, 8 + Math.floor(rage / 10));
         navigator.vibrate(duration);
@@ -531,95 +500,79 @@
     function showDeathScreen() {
       youDiedShown = true;
       gameActive = false;
-      
-      // Отключаем тапы
       tapArea.style.pointerEvents = 'none';
       
-      // Критическая вспышка
       const flash = document.createElement('div');
       flash.className = 'critical-flash';
       document.body.appendChild(flash);
       setTimeout(() => flash.remove(), 2000);
       
-      // Звук смерти
       playDeathSound();
       
-      // Сильная вибрация
       if (navigator.vibrate) {
         navigator.vibrate([500, 200, 500]);
       }
       
-      // YOU DIED экран
       setTimeout(() => {
         youDiedOverlay.style.display = 'flex';
         progressBar.parentElement.style.display = 'none';
       }, 300);
     }
     
-    // === СИСТЕМА ЯРОСТИ ===
     function startDecay() {
       if (decayInterval) clearInterval(decayInterval);
       
       decayInterval = setInterval(() => {
         if (rage > 0 && gameActive) {
-          rage = Math.max(0, rage - 0.7);
+          rage = Math.max(0, rage - 0.5);
           updateUI();
         }
       }, 100);
     }
     
-    function handleTap(x, y) {
-      if (!gameActive) return;
+    function handleTapEvent(e) {
+      if (e.type === 'touchstart') e.preventDefault();
       
-      const now = Date.now();
-      // Защита от слишком быстрых тапов
-      if (now - lastTapTime < 50) return;
-      lastTapTime = now;
+      if (!gameActive || isProcessingTap) return;
       
-      // Инициализация звука при первом тапе
+      isProcessingTap = true;
+      clearTimeout(tapTimeout);
+      tapTimeout = setTimeout(() => { isProcessingTap = false; }, 100);
+      
+      let clientX, clientY;
+      if (e.type === 'touchstart') {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      
       if (!soundInitialized) initSound();
       
-      // Проверка на смерть
       if (rage >= 100) {
         if (!youDiedShown) showDeathScreen();
+        isProcessingTap = false;
         return;
       }
       
-      // Увеличение ярости
-      rage = Math.min(rage + 4, 100);
-      
-      // Звук удара
+      rage = Math.min(rage + 3, 100);
       playDamageSound();
-      
-      // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ (более насыщенные)
-      createEffects(x, y);
-      
-      // Обновление UI
+      createEffects(clientX, clientY);
       updateUI();
       
-      // Перезапуск убывания
       if (decayInterval) {
         clearInterval(decayInterval);
         startDecay();
       }
     }
     
-    // === ОБРАБОТЧИКИ ===
-    tapArea.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      handleTap(touch.clientX, touch.clientY);
-    }, { passive: false });
+    tapArea.addEventListener('touchstart', handleTapEvent, { passive: false });
+    tapArea.addEventListener('click', handleTapEvent);
     
-    tapArea.addEventListener('click', (e) => {
-      handleTap(e.clientX, e.clientY);
-    });
-    
-    // === ЗАПУСК ===
     updateUI();
     startDecay();
     
-    // Очистка старых частиц
     setInterval(() => {
       const particles = particlesContainer.querySelectorAll('.rage-particle');
       if (particles.length > 25) {
