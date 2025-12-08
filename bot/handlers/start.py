@@ -4,6 +4,7 @@ from aiogram.filters import Command
 from bot.keyboards import main_keyboard, start_keyboard
 from bot.utils.user import get_user, save_user, schedule_jobs
 from bot.utils.time import today
+from bot.utils.user import calculate_streak, streak_text  # добавили сюда
 
 router = Router()
 
@@ -11,8 +12,10 @@ router = Router()
 async def cmd_start(message: Message):
     user = await get_user(message.from_user.id)
     if user.active:
+        days = calculate_streak(user.start_date)
+        text = streak_text(days)
         await message.answer(
-            f"С возвращением, брат. Ты держишься {user.streak} {user.streak_text}.\nЯ рядом.",
+            f"С возвращением, брат. Ты держишься {days} {text}.\nЯ рядом.",
             reply_markup=main_keyboard()
         )
     else:
@@ -32,13 +35,13 @@ async def real_start(message: Message):
         await message.answer("Ты уже в деле, брат.")
         return
 
-    # заполняем поля пользователя
+    # Обновляем поля пользователя через объект User
     user.active = True
-    user.start_date = today()
+    user.start_date = today().isoformat()
     user.achievements = []
     user.mood_history = []
 
-    await save_user(user)
+    await save_user(user)  # передаём сам объект User
     await schedule_jobs(message.from_user.id, message.bot)
 
     await message.answer(
