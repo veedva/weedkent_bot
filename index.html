@@ -63,7 +63,7 @@
     .progress-bar {
       height: 100%;
       width: 0%;
-      transition: width 0.1s linear, background-color 0.3s ease;
+      transition: width 0.15s ease-out, background-color 0.3s ease;
       border-radius: 5px;
     }
     
@@ -99,24 +99,24 @@
       contain: strict;
     }
     
-    /* ВЫЛЕТАЮЩИЕ СЛОВА - УСИЛЕННЫЙ РАЗЛЕТ */
+    /* ВЫЛЕТАЮЩИЕ СЛОВА */
     .rage-particle {
       position: absolute;
       pointer-events: none;
       opacity: 0;
       font-weight: 900;
-      animation: particleFloat 1.5s ease-out forwards;
+      animation: particleFloat 1.2s ease-out forwards;
       will-change: transform, opacity;
     }
     
     .rage-word {
       font-family: 'Arial Black', Impact, sans-serif;
       letter-spacing: 1px;
-      text-shadow: 0 0 15px currentColor, 0 0 30px rgba(255, 255, 255, 0.3);
+      text-shadow: 0 0 12px currentColor, 0 0 25px rgba(255, 255, 255, 0.3);
     }
     
     .rage-emoji {
-      text-shadow: 0 0 20px currentColor, 0 0 40px rgba(255, 255, 255, 0.4);
+      text-shadow: 0 0 16px currentColor, 0 0 32px rgba(255, 255, 255, 0.4);
     }
     
     @keyframes particleFloat {
@@ -124,13 +124,13 @@
         opacity: 1;
         transform: translate(0, 0) scale(0.9) rotate(0deg);
       }
-      30% {
+      40% {
         opacity: 1;
-        transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(var(--rot));
+        transform: translate(var(--dx), var(--dy)) scale(1.3) rotate(var(--rot));
       }
       100% {
         opacity: 0;
-        transform: translate(calc(var(--dx) * 1.5), calc(var(--dy) * 1.5)) scale(0.2);
+        transform: translate(calc(var(--dx) * 1.2), calc(var(--dy) * 1.2)) scale(0.3);
       }
     }
     
@@ -144,32 +144,32 @@
       opacity: 0;
       pointer-events: none;
       z-index: 2;
-      animation: quickFlash 0.3s ease-out;
+      animation: quickFlash 0.25s ease-out;
       will-change: opacity;
     }
     
     @keyframes quickFlash {
-      0% { opacity: 0.8; }
+      0% { opacity: 0.6; }
       100% { opacity: 0; }
     }
     
     /* ТОЧКА УДАРА */
     .tap-hit {
       position: absolute;
-      width: 25px;
-      height: 25px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       transform: translate(-50%, -50%) scale(0);
       pointer-events: none;
       z-index: 4;
-      animation: tapHitEffect 0.4s ease-out forwards;
+      animation: tapHitEffect 0.35s ease-out forwards;
       will-change: transform, opacity;
     }
     
     @keyframes tapHitEffect {
       0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-      70% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.6; }
-      100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+      70% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.5; }
+      100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
     }
     
     /* YOU DIED ЭКРАН */
@@ -228,51 +228,6 @@
         opacity: 0;
         transform: scale(3);
         filter: blur(50px) brightness(5);
-      }
-      10% {
-        opacity: 0.1;
-        transform: scale(2.8);
-        filter: blur(40px) brightness(4.5);
-      }
-      20% {
-        opacity: 0.2;
-        transform: scale(2.5);
-        filter: blur(35px) brightness(4);
-      }
-      30% {
-        opacity: 0.3;
-        transform: scale(2.2);
-        filter: blur(30px) brightness(3.5);
-      }
-      40% {
-        opacity: 0.4;
-        transform: scale(1.9);
-        filter: blur(25px) brightness(3);
-      }
-      50% {
-        opacity: 0.5;
-        transform: scale(1.6);
-        filter: blur(20px) brightness(2.5);
-      }
-      60% {
-        opacity: 0.6;
-        transform: scale(1.3);
-        filter: blur(15px) brightness(2);
-      }
-      70% {
-        opacity: 0.7;
-        transform: scale(1.15);
-        filter: blur(10px) brightness(1.8);
-      }
-      80% {
-        opacity: 0.8;
-        transform: scale(1.07);
-        filter: blur(5px) brightness(1.4);
-      }
-      90% {
-        opacity: 0.9;
-        transform: scale(1.02);
-        filter: blur(2px) brightness(1.2);
       }
       100% {
         opacity: 1;
@@ -342,15 +297,12 @@
     let rage = 0;
     let soundEnabled = false;
     let soundInitialized = false;
-    let soundCooldown = false;
-    let audioElements = [];
     let youDiedSound = null;
-    let currentAudioIndex = 0;
     let firstTapDone = false;
     let youDiedShown = false;
-    let decayTimer = null;
     let gameActive = true;
-    let isProcessingTap = false; // ЗАЩИТА ОТ ДВОЙНЫХ КЛИКОВ
+    let isProcessingTap = false;
+    let lastTapTime = 0;
     
     // Слова и эмодзи
     const WORDS = [
@@ -379,56 +331,75 @@
     const particlesContainer = document.getElementById('particlesContainer');
     
     // =================== ЗВУК ===================
+    // ОДИН АУДИОЭЛЕМЕНТ ДЛЯ ВСЕХ ЗВУКОВ - НЕТ НАЛОЖЕНИЙ
+    let currentAudio = null;
+    let damageAudio = null;
+    
     function initSoundOnFirstTap() {
       if (soundInitialized) return;
       
-      for (let i = 0; i < 3; i++) {
-        const audio = new Audio();
-        audio.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
-        audio.preload = "auto";
-        audio.volume = 0.5;
-        audioElements.push(audio);
-      }
+      // Аудио для ударов
+      damageAudio = new Audio();
+      damageAudio.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
+      damageAudio.preload = "auto";
+      damageAudio.volume = 0.3;
       
+      // Аудио для смерти - ИСПРАВЛЕННЫЙ URL
       youDiedSound = new Audio();
-      youDiedSound.src = "https://veedva.github.io/weedkent_bot/dark-souls-you-died.mp3";
+      youDiedSound.src = "https://veedva.github.io/weedkent_bot/dark-souls-you-died.mp3"; // ИСПРАВЛЕНО
       youDiedSound.preload = "auto";
       youDiedSound.volume = 0.8;
       
       soundInitialized = true;
       soundEnabled = true;
+      console.log("Звук инициализирован");
     }
     
     function playDamageSound() {
-      if (!soundEnabled || soundCooldown) return;
+      if (!soundEnabled || !damageAudio) return;
       
-      // Вероятность звука зависит от уровня ярости
-      const soundChance = 0.1 + (rage / 100) * 0.25;
-      if (Math.random() > soundChance) return;
+      // Меньше звуков - только 20% шанс
+      if (Math.random() > 0.2) return;
       
       try {
-        const audio = audioElements[currentAudioIndex];
-        currentAudioIndex = (currentAudioIndex + 1) % audioElements.length;
-        
-        audio.currentTime = 0;
-        audio.volume = 0.4 + (rage / 300);
-        audio.play().catch(() => {});
-        
-        soundCooldown = true;
-        setTimeout(() => { soundCooldown = false; }, 150);
-      } catch (error) {}
+        // Останавливаем предыдущий звук и начинаем новый
+        damageAudio.pause();
+        damageAudio.currentTime = 0;
+        damageAudio.volume = 0.2 + (rage / 500);
+        damageAudio.play().catch((e) => {
+          console.log("Ошибка воспроизведения звука удара:", e);
+        });
+      } catch (error) {
+        console.log("Ошибка при воспроизведении звука удара:", error);
+      }
     }
     
     function playYouDiedSound() {
       if (!soundEnabled || !youDiedSound) return;
       
       try {
+        console.log("Воспроизведение звука смерти...");
+        
+        // Даем небольшую задержку как в игре
         setTimeout(() => {
           youDiedSound.currentTime = 0;
           youDiedSound.volume = 0.8;
-          youDiedSound.play().catch(() => {});
+          youDiedSound.play()
+            .then(() => {
+              console.log("Звук смерти успешно воспроизведен");
+            })
+            .catch((e) => {
+              console.log("Ошибка воспроизведения звука смерти:", e);
+              // Пробуем альтернативный способ
+              youDiedSound.load();
+              youDiedSound.play().catch((e2) => {
+                console.log("Вторая попытка тоже не удалась:", e2);
+              });
+            });
         }, 400);
-      } catch (error) {}
+      } catch (error) {
+        console.log("Ошибка при воспроизведении звука смерти:", error);
+      }
     }
     
     // =================== ОСНОВНЫЕ ФУНКЦИИ ===================
@@ -460,7 +431,7 @@
       document.body.appendChild(hit);
       setTimeout(() => {
         if (hit.parentNode) hit.remove();
-      }, 400);
+      }, 350);
     }
     
     function createParticle(x, y, isEmoji) {
@@ -472,42 +443,34 @@
       
       const intensity = Math.min(rage / 100, 1);
       
-      // БОЛЬШИЕ РАЗМЕРЫ
-      const baseSize = isEmoji ? 40 : 32;
-      const sizeMultiplier = 0.9 + (intensity * 0.8);
+      const baseSize = isEmoji ? 36 : 28;
+      const sizeMultiplier = 0.9 + (intensity * 0.5);
       const fontSize = Math.floor(baseSize * sizeMultiplier);
       particle.style.fontSize = `${fontSize}px`;
       
-      // СИЛЬНЫЙ РАЗЛЕТ - больше расстояние
-      const baseDistance = 80 + (intensity * 100); // От 80 до 180 пикселей
-      
+      // Сильный разлет
+      const baseDistance = 70 + (intensity * 60);
       const angle = Math.random() * Math.PI * 2;
       const distance = baseDistance;
       
-      // УСИЛЕННЫЕ ПАРАМЕТРЫ
       particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
       particle.style.setProperty('--dy', `${Math.sin(angle) * distance * 0.7}px`);
-      particle.style.setProperty('--rot', `${Math.random() * 60 - 30}deg`);
+      particle.style.setProperty('--rot', `${Math.random() * 40 - 20}deg`);
       particle.style.setProperty('--scale', sizeMultiplier);
       
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
-      
-      // Цвет частицы
       particle.style.color = getProgressColor();
       
       particlesContainer.appendChild(particle);
       
-      // Удаляем через 1.5 секунды
       setTimeout(() => {
-        if (particle.parentNode) {
-          particle.remove();
-        }
-      }, 1500);
+        if (particle.parentNode) particle.remove();
+      }, 1200);
       
       // Ограничиваем количество частиц
       const particles = particlesContainer.querySelectorAll('.rage-particle');
-      if (particles.length > 15) {
+      if (particles.length > 12) {
         particles[0].remove();
       }
     }
@@ -517,7 +480,7 @@
       flash.className = 'screen-flash';
       
       const intensity = Math.min(rage / 100, 1);
-      const opacity = 0.2 + (intensity * 0.3);
+      const opacity = 0.15 + (intensity * 0.2);
       const color = getProgressColor().replace(')', `, ${opacity})`).replace('#', 'rgba(');
       
       flash.style.background = color;
@@ -525,7 +488,7 @@
       document.body.appendChild(flash);
       setTimeout(() => {
         if (flash.parentNode) flash.remove();
-      }, 300);
+      }, 250);
     }
     
     function createCriticalFlash() {
@@ -542,49 +505,59 @@
       youDiedShown = true;
       gameActive = false;
       
-      tapArea.style.pointerEvents = 'none';
+      console.log("Показываем YOU DIED");
       
+      tapArea.style.pointerEvents = 'none';
       createCriticalFlash();
+      
+      // ЗВУК СМЕРТИ - ДОЛЖЕН ИГРАТЬСЯ
       playYouDiedSound();
       
       if (navigator.vibrate) {
-        navigator.vibrate([500, 150, 500]);
+        navigator.vibrate([400, 100, 400]);
       }
       
       setTimeout(() => {
         youDiedOverlay.style.display = 'flex';
         progressBar.parentElement.style.display = 'none';
-      }, 250);
+        console.log("YOU DIED экран показан");
+      }, 200);
     }
     
-    // СБРОС ЯРОСТИ
+    // ФИКСИРУЕМ БАГ С УБЫВАНИЕМ ЯРОСТИ
+    let decayInterval = null;
+    
     function startDecay() {
-      if (decayTimer) clearTimeout(decayTimer);
+      // Очищаем предыдущий интервал
+      if (decayInterval) clearInterval(decayInterval);
       
-      decayTimer = setTimeout(() => {
-        if (rage > 0) {
-          const decayRate = 1.5 + (rage / 40);
-          rage = Math.max(rage - decayRate, 0);
-          
-          if (gameActive) {
-            updateUI();
-          }
-          
-          if (rage > 0) {
-            startDecay();
-          }
+      decayInterval = setInterval(() => {
+        if (rage > 0 && gameActive) {
+          // ПОСТОЯННАЯ СКОРОСТЬ УБЫВАНИЯ
+          rage = Math.max(0, rage - 0.8);
+          updateUI();
         }
       }, 100);
     }
     
+    function stopDecay() {
+      if (decayInterval) {
+        clearInterval(decayInterval);
+        decayInterval = null;
+      }
+    }
+    
     function handleTap(x, y) {
-      // ЗАЩИТА ОТ ДВОЙНЫХ КЛИКОВ
       if (!gameActive || isProcessingTap) return;
-      isProcessingTap = true;
       
-      setTimeout(() => {
-        isProcessingTap = false;
-      }, 100);
+      const now = Date.now();
+      
+      // ЗАЩИТА ОТ СЛИШКОМ ЧАСТЫХ КАСАНИЙ
+      if (now - lastTapTime < 80) return;
+      lastTapTime = now;
+      
+      isProcessingTap = true;
+      setTimeout(() => { isProcessingTap = false; }, 80);
       
       if (!firstTapDone) {
         firstTapDone = true;
@@ -594,66 +567,54 @@
       // Проверяем достижение 100%
       if (rage >= 100) {
         if (!youDiedShown) {
+          console.log("Достигнуто 100% ярости");
           showYouDied();
         }
-        isProcessingTap = false;
         return;
       }
       
       // Увеличиваем ярость
-      let rageGain = 4; // Немного больше для лучшей обратной связи
-      rage = Math.min(rage + rageGain, 100);
+      rage = Math.min(rage + 3.5, 100);
       
-      // Звук
+      // Звук удара
       playDamageSound();
       
       // Визуальные эффекты
       createTapHit(x, y);
       createFlash();
       
-      // БОЛЬШЕ ЧАСТИЦ С СИЛЬНЫМ РАЗЛЕТОМ
-      const particleCount = rage > 70 ? 4 : (rage > 40 ? 3 : 2);
+      // Частицы
+      const particleCount = rage > 70 ? 3 : (rage > 40 ? 2 : 1);
       
       for (let i = 0; i < particleCount; i++) {
         setTimeout(() => {
-          const offsetX = (Math.random() * 50 - 25);
-          const offsetY = (Math.random() * 50 - 25);
-          
+          const offsetX = (Math.random() * 40 - 20);
+          const offsetY = (Math.random() * 40 - 20);
           createParticle(x + offsetX, y + offsetY, Math.random() > 0.5);
-        }, i * 50);
+        }, i * 60);
       }
       
       // Вибрация
-      if (navigator.vibrate) {
-        const intensity = Math.min(rage / 100, 1);
-        const duration = Math.floor(10 + intensity * 20);
+      if (navigator.vibrate && rage > 50 && Math.random() > 0.5) {
+        const duration = Math.min(12, 5 + Math.floor(rage / 20));
         navigator.vibrate(duration);
       }
       
       updateUI();
+      
+      // Перезапускаем убывание после каждого тапа
+      stopDecay();
       startDecay();
     }
     
     // =================== ОБРАБОТЧИКИ ===================
-    // ПРЕДОТВРАЩАЕМ ДВОЙНЫЕ КЛИКИ НА МОБИЛЬНЫХ
-    let lastTouchTime = 0;
-    
     tapArea.addEventListener('touchstart', function(e) {
       e.preventDefault();
-      const now = Date.now();
-      
-      // Защита от слишком быстрых касаний
-      if (now - lastTouchTime < 100) return;
-      lastTouchTime = now;
-      
       const touch = e.touches[0];
       handleTap(touch.clientX, touch.clientY);
     }, { passive: false });
     
-    // Для десктопов - обычный клик
     tapArea.addEventListener('click', function(e) {
-      const now = Date.now();
-      if (now - lastTouchTime < 100) return; // Игнорируем если был недавний touch
       handleTap(e.clientX, e.clientY);
     });
     
@@ -664,22 +625,32 @@
     // Автоматическая очистка старых частиц
     setInterval(() => {
       const particles = particlesContainer.querySelectorAll('.rage-particle');
-      if (particles.length > 20) {
-        const toRemove = particles.length - 15;
+      if (particles.length > 15) {
+        const toRemove = particles.length - 12;
         for (let i = 0; i < toRemove; i++) {
-          if (particles[i]) {
-            particles[i].remove();
-          }
+          if (particles[i]) particles[i].remove();
         }
       }
-    }, 3000);
+    }, 2000);
     
+    // Очистка при скрытии вкладки
     document.addEventListener('visibilitychange', function() {
       if (document.hidden) {
         const particles = particlesContainer.querySelectorAll('.rage-particle');
         particles.forEach(p => p.remove());
+        stopDecay();
+      } else if (gameActive) {
+        startDecay();
       }
     });
+    
+    // ДЕБАГ: кнопка для тестирования звука смерти
+    window.testDeathSound = function() {
+      console.log("Тест звука смерти...");
+      playYouDiedSound();
+    };
+    
+    console.log("Игра загружена. Для теста звука смерти выполните testDeathSound() в консоли");
   </script>
 </body>
 </html>
