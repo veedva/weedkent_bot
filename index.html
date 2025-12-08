@@ -6,63 +6,71 @@
   <title>🤬 ПИЗДЕЦ-ГЕНЕРАТОР</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    /* Сброс стилей для мобилок */
+    /* Полный сброс для мобилок */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent; /* Убираем синее выделение при тапе */
-      -webkit-user-select: none;
-      user-select: none;
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      touch-action: manipulation !important;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
     }
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
       color: white;
-      min-height: 100vh;
-      overflow: hidden;
-      touch-action: manipulation; /* Улучшает тач-события */
-      position: relative;
-      padding: 20px;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
     
-    /* Заголовок */
+    /* Хедер */
     .header {
       text-align: center;
-      padding-top: 20px;
+      padding-top: 10px;
       width: 100%;
+      flex-shrink: 0;
     }
     
     h1 {
       font-size: 28px;
       color: #ff4757;
-      text-shadow: 0 0 15px rgba(255, 71, 87, 0.5);
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
+      text-shadow: 0 0 20px rgba(255, 71, 87, 0.7);
+      margin-bottom: 5px;
     }
     
     .subtitle {
       color: #aaa;
       font-size: 14px;
-      margin-bottom: 20px;
     }
     
-    /* Основная кнопка - ОГРОМНАЯ для пальцев */
+    /* ОСНОВНАЯ КНОПКА - оптимизирована для тапа */
     #rage-button {
-      width: 85vw;
-      height: 85vw;
+      width: 85vmin;
+      height: 85vmin;
       max-width: 300px;
       max-height: 300px;
-      min-width: 250px;
-      min-height: 250px;
+      min-width: 200px;
+      min-height: 200px;
       
       background: radial-gradient(circle at 30% 30%, #ff4757 0%, #c23636 100%);
-      border: none;
+      border: none !important;
       border-radius: 50%;
       
       color: white;
@@ -72,16 +80,15 @@
       letter-spacing: 2px;
       
       cursor: pointer;
-      margin: 10px 0;
+      margin: auto;
       
-      transition: all 0.1s ease;
+      transition: transform 0.15s ease;
       transform: scale(1);
       
       box-shadow: 
-        0 10px 30px rgba(255, 71, 87, 0.4),
-        0 0 0 0 rgba(255, 71, 87, 0.1), /* Для анимации пульсации */
-        inset 0 -8px 20px rgba(0, 0, 0, 0.3),
-        inset 0 8px 20px rgba(255, 255, 255, 0.1);
+        0 15px 35px rgba(255, 71, 87, 0.5),
+        inset 0 -10px 25px rgba(0, 0, 0, 0.4),
+        inset 0 10px 25px rgba(255, 255, 255, 0.15);
       
       display: flex;
       align-items: center;
@@ -89,140 +96,122 @@
       position: relative;
       overflow: hidden;
       
-      /* Убираем стандартные стили */
-      outline: none;
-      -webkit-appearance: none;
+      /* Критично для мобилок */
+      outline: none !important;
+      -webkit-appearance: none !important;
+      -webkit-touch-callout: none !important;
+      -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+      touch-action: manipulation !important;
     }
     
-    /* Анимация нажатия */
-    #rage-button:active {
-      transform: scale(0.95);
+    /* Анимация нажатия - РАБОТАЕТ НА МОБИЛКЕ */
+    .rage-button-active {
+      transform: scale(0.88) !important;
       box-shadow: 
-        0 5px 15px rgba(255, 71, 87, 0.6),
-        0 0 0 20px rgba(255, 71, 87, 0.1),
-        inset 0 -4px 10px rgba(0, 0, 0, 0.4),
-        inset 0 4px 10px rgba(255, 255, 255, 0.2);
+        0 5px 20px rgba(255, 71, 87, 0.8),
+        inset 0 -5px 15px rgba(0, 0, 0, 0.6),
+        inset 0 5px 15px rgba(255, 255, 255, 0.25) !important;
     }
     
-    /* Внутренний текст кнопки */
-    .button-text {
-      position: relative;
-      z-index: 2;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
-    
-    /* Эффект свечения внутри кнопки */
+    /* Свечение кнопки */
     .button-glow {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
       opacity: 0;
       border-radius: 50%;
       transition: opacity 0.3s;
       pointer-events: none;
     }
     
-    /* Вылетающие слова - БОЛЬШИЕ и МЕДЛЕННЫЕ */
+    /* ВЫЛЕТАЮЩИЕ СЛОВА - большие и медленные */
     .swear-word {
       position: absolute;
       pointer-events: none;
-      font-size: 28px; /* Увеличили */
+      font-size: 32px; /* Больше! */
       font-weight: 900;
-      z-index: 100;
+      z-index: 1000;
       text-shadow: 
-        0 0 10px currentColor,
-        0 0 20px currentColor,
-        2px 2px 0 rgba(0, 0, 0, 0.5);
+        0 0 15px currentColor,
+        0 0 30px currentColor,
+        3px 3px 0 rgba(0, 0, 0, 0.7);
       opacity: 1;
-      animation: floatUp 3s ease-out forwards; /* Увеличили время в 2 раза */
+      animation: wordFloat 3.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
       white-space: nowrap;
+      font-family: 'Arial Black', Impact, sans-serif;
     }
     
-    /* Анимация вылета */
-    @keyframes floatUp {
+    @keyframes wordFloat {
       0% {
         opacity: 1;
-        transform: 
-          translate(0, 0) 
-          rotate(0deg) 
-          scale(1);
+        transform: translate(0, 0) rotate(0deg) scale(0.8);
         filter: blur(0);
       }
-      50% {
+      20% {
         opacity: 1;
-        transform: 
-          translate(var(--move-x), var(--move-y)) 
-          rotate(var(--rotate)) 
-          scale(1.5); /* Увеличиваем в полёте */
+        transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.8);
+      }
+      40% {
+        opacity: 1;
         filter: blur(0);
       }
       100% {
         opacity: 0;
-        transform: 
-          translate(calc(var(--move-x) * 1.5), calc(var(--move-y) * 1.5)) 
-          rotate(calc(var(--rotate) * 2)) 
-          scale(0.5);
-        filter: blur(2px);
+        transform: translate(calc(var(--tx) * 1.8), calc(var(--ty) * 1.8)) rotate(calc(var(--rot) * 2)) scale(0.5);
+        filter: blur(3px);
       }
     }
     
-    /* Эмодзи - отдельная анимация */
+    /* ВЫЛЕТАЮЩИЕ ЭМОДЗИ */
     .emoji-particle {
       position: absolute;
       pointer-events: none;
-      font-size: 40px; /* Увеличили */
-      z-index: 100;
+      font-size: 48px; /* Ещё больше! */
+      z-index: 1000;
       opacity: 1;
-      animation: emojiFloat 4s ease-out forwards; /* Ещё медленнее */
+      animation: emojiFloat 4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      text-shadow: 0 0 20px currentColor;
     }
     
     @keyframes emojiFloat {
       0% {
         opacity: 1;
-        transform: 
-          translate(0, 0) 
-          rotate(0deg) 
-          scale(0.8);
+        transform: translate(0, 0) rotate(0deg) scale(0.7);
       }
-      30% {
+      25% {
         opacity: 1;
-        transform: 
-          translate(var(--emoji-x), var(--emoji-y)) 
-          rotate(var(--emoji-rotate)) 
-          scale(1.8); /* Большое увеличение */
+        transform: translate(var(--ex), var(--ey)) rotate(var(--erot)) scale(2.2);
       }
       100% {
         opacity: 0;
-        transform: 
-          translate(calc(var(--emoji-x) * 1.8), calc(var(--emoji-y) * 1.8)) 
-          rotate(calc(var(--emoji-rotate) * 3)) 
-          scale(0.3);
+        transform: translate(calc(var(--ex) * 2), calc(var(--ey) * 2)) rotate(calc(var(--erot) * 3)) scale(0.3);
       }
     }
     
-    /* Эффект взрыва */
-    .explosion {
+    /* ЭФФЕКТ ВЗРЫВА */
+    .explosion-effect {
       position: absolute;
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 71, 87, 0.8) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(255, 71, 87, 0.9) 0%, transparent 80%);
       opacity: 0;
       pointer-events: none;
-      animation: explode 0.6s ease-out;
+      animation: explosion 0.8s ease-out;
+      z-index: 500;
     }
     
-    @keyframes explode {
+    @keyframes explosion {
       0% {
         opacity: 1;
         transform: scale(0.1);
       }
       50% {
-        opacity: 0.7;
-        transform: scale(2);
+        opacity: 0.8;
+        transform: scale(2.5);
       }
       100% {
         opacity: 0;
@@ -230,18 +219,18 @@
       }
     }
     
-    /* Конфетти */
-    .confetti {
+    /* КОНФЕТТИ */
+    .confetti-piece {
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       background: #ff4757;
       opacity: 0;
-      animation: confettiFall 2s linear forwards;
-      border-radius: 2px;
+      animation: confettiDrop 2.5s linear forwards;
+      border-radius: 3px;
     }
     
-    @keyframes confettiFall {
+    @keyframes confettiDrop {
       0% {
         opacity: 1;
         transform: translateY(-100px) rotate(0deg);
@@ -252,18 +241,19 @@
       }
     }
     
-    /* Статистика внизу (можно убрать, но оставил минимальную) */
+    /* СТАТИСТИКА (минимум) */
     .stats {
       display: flex;
       justify-content: space-around;
       width: 100%;
       max-width: 400px;
-      padding: 15px;
+      padding: 12px;
       background: rgba(255, 71, 87, 0.1);
       border-radius: 20px;
       border: 1px solid rgba(255, 71, 87, 0.2);
       margin: 10px 0;
-      opacity: 0.7; /* Полупрозрачная, не отвлекает */
+      opacity: 0.7;
+      flex-shrink: 0;
     }
     
     .stat {
@@ -271,135 +261,105 @@
     }
     
     .stat-value {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: bold;
       color: #ffcc00;
     }
     
     .stat-label {
-      font-size: 11px;
+      font-size: 10px;
       color: #888;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-top: 4px;
+      margin-top: 3px;
     }
     
-    /* Кнопка закрытия */
+    /* КНОПКА ЗАКРЫТИЯ */
     #close-btn {
-      background: rgba(255, 71, 87, 0.2);
+      background: rgba(255, 71, 87, 0.25);
       color: white;
       border: 2px solid rgba(255, 71, 87, 0.5);
-      padding: 14px 40px;
+      padding: 16px 0;
       border-radius: 25px;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 600;
       cursor: pointer;
-      margin: 20px 0;
-      transition: all 0.3s;
-      outline: none;
-      -webkit-appearance: none;
-      width: 80%;
-      max-width: 300px;
+      margin: 15px 0;
+      transition: all 0.2s;
+      width: 90%;
+      max-width: 320px;
+      flex-shrink: 0;
+      
+      /* Для мобилок */
+      outline: none !important;
+      -webkit-appearance: none !important;
+      -webkit-tap-highlight-color: rgba(255, 71, 87, 0.3) !important;
     }
     
     #close-btn:active {
       background: rgba(255, 71, 87, 0.4);
-      transform: scale(0.98);
+      transform: scale(0.97);
     }
     
-    /* Ачивки */
-    .achievement-notification {
+    /* АЧИВКИ */
+    .achievement-popup {
       position: fixed;
-      top: 20px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%) scale(0);
       background: linear-gradient(45deg, #ff4757, #ffcc00);
       color: black;
-      padding: 15px 25px;
-      border-radius: 15px;
+      padding: 20px 30px;
+      border-radius: 20px;
       font-weight: bold;
-      font-size: 18px;
+      font-size: 20px;
       text-align: center;
-      z-index: 1000;
-      box-shadow: 0 5px 20px rgba(255, 71, 87, 0.5);
-      animation: slideDown 3s ease-in-out forwards;
-      display: none;
+      z-index: 2000;
+      box-shadow: 0 10px 40px rgba(255, 71, 87, 0.7);
+      animation: achievementShow 2.5s ease-out forwards;
+      pointer-events: none;
     }
     
-    @keyframes slideDown {
-      0% {
-        top: -100px;
-        opacity: 0;
-      }
-      15% {
-        top: 20px;
-        opacity: 1;
-      }
-      85% {
-        top: 20px;
-        opacity: 1;
-      }
-      100% {
-        top: -100px;
-        opacity: 0;
-      }
+    @keyframes achievementShow {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      20% { transform: translate(-50%, -50%) scale(1); }
+      80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
     
-    /* Вибро-эффект для телефона */
-    @media (hover: none) and (pointer: coarse) {
-      #rage-button {
-        cursor: default;
-      }
-    }
-    
-    /* Адаптивность */
+    /* АДАПТИВНОСТЬ */
     @media (max-width: 480px) {
-      h1 {
-        font-size: 24px;
-      }
-      
-      #rage-button {
-        width: 80vw;
-        height: 80vw;
+      h1 { font-size: 24px; }
+      #rage-button { 
         font-size: 28px;
+        width: 80vmin;
+        height: 80vmin;
       }
-      
-      .swear-word {
-        font-size: 24px;
-      }
-      
-      .emoji-particle {
-        font-size: 36px;
-      }
+      .swear-word { font-size: 28px; }
+      .emoji-particle { font-size: 40px; }
     }
     
     @media (max-height: 700px) {
-      .header {
-        padding-top: 10px;
-      }
-      
+      .header { padding-top: 5px; }
+      h1 { font-size: 22px; margin-bottom: 2px; }
+      .subtitle { font-size: 12px; }
       #rage-button {
-        width: 70vw;
-        height: 70vw;
-        max-width: 250px;
-        max-height: 250px;
+        width: 75vmin;
+        height: 75vmin;
       }
-      
-      .stats {
-        margin: 5px 0;
-        padding: 12px;
-      }
+      .stats { padding: 8px; margin: 5px 0; }
     }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>🤬 ПИЗДЕЦ-ГЕНЕРАТОР</h1>
-    <div class="subtitle">БЕЙ КНОПКУ И ВЫПУСКАЙ ПАР</div>
+    <div class="subtitle">ЖМИ КНОПКУ → ВЫПУСТИ ПАР → ЧУВСТВУЙ ОБЛЕГЧЕНИЕ</div>
   </div>
   
   <button id="rage-button">
-    <div class="button-text">ПИЗДЕЦ!</div>
+    <span class="button-text">ПИЗДЕЦ!</span>
     <div class="button-glow" id="buttonGlow"></div>
   </button>
   
@@ -410,22 +370,18 @@
     </div>
     <div class="stat">
       <div class="stat-value" id="total">0</div>
-      <div class="stat-label">всего</div>
+      <div class="stat-label">нажатий</div>
     </div>
     <div class="stat">
-      <div class="stat-value" id="power">🔥</div>
-      <div class="stat-label">мощь</div>
+      <div class="stat-value" id="mood">😐</div>
+      <div class="stat-label">настрой</div>
     </div>
   </div>
   
-  <button id="close-btn">✖ ЗАКРЫТЬ</button>
-  
-  <div class="achievement-notification" id="achievement">
-    🎉 АЧИВКА! <span id="achievement-text"></span>
-  </div>
+  <button id="close-btn">✖ ВЕРНУТЬСЯ В БОТА</button>
   
   <script>
-    // Telegram WebApp
+    // =================== ТЕЛЕГРАМ ===================
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
     
@@ -436,19 +392,12 @@
       });
     }
     
-    // Данные
+    // =================== ДАННЫЕ ===================
     let totalClicks = 0;
-    let streak = 0;
-    let streakTimeout;
-    const achievements = [
-      { count: 10, text: "ПИЗДЕЦ-НОВИЧОК" },
-      { count: 30, text: "МАСТЕР ГНЕВА" },
-      { count: 50, text: "ЛЕГЕНДА РЕЛАКСА" },
-      { count: 100, text: "БОГ СПОКОЙСТВИЯ" }
-    ];
-    let unlockedAchievements = [];
+    let currentStreak = 0;
+    let streakTimer = null;
+    const achieved = [];
     
-    // Слова и эмодзи
     const SWEAR_WORDS = [
       "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", 
       "ХУЙНЯ!", "ЁБАНЫЙ!", "ПИЗДЕЦ!", "ОХУЕТЬ!", "ЗАЕБАЛО!",
@@ -460,179 +409,204 @@
       "😤", "🤯", "👹", "😾", "🗯️", "💣", "🧨", "🖕", "💀", "🦹"
     ];
     
-    // DOM элементы
+    const MOOD_LEVELS = ["😐", "😠", "😡", "🤬", "💥", "🔥", "☠️", "👑"];
+    const ACHIEVEMENTS = [
+      { count: 5, text: "👶 НОВИЧОК ГНЕВА" },
+      { count: 15, text: "💪 МАСТЕР РЕЛАКСА" },
+      { count: 30, text: "🔥 КОРОЛЬ КАТАРСИСА" },
+      { count: 50, text: "👑 БОГ СПОКОЙСТВИЯ" }
+    ];
+    
+    // =================== DOM ===================
     const rageButton = document.getElementById('rage-button');
     const buttonGlow = document.getElementById('buttonGlow');
     const closeBtn = document.getElementById('close-btn');
-    const streakElement = document.getElementById('streak');
-    const totalElement = document.getElementById('total');
-    const powerElement = document.getElementById('power');
-    const achievementElement = document.getElementById('achievement');
-    const achievementText = document.getElementById('achievement-text');
+    const streakEl = document.getElementById('streak');
+    const totalEl = document.getElementById('total');
+    const moodEl = document.getElementById('mood');
     
-    // Обновить статистику
+    // =================== ФУНКЦИИ ===================
     function updateStats() {
-      streakElement.textContent = streak;
-      totalElement.textContent = totalClicks;
+      streakEl.textContent = currentStreak;
+      totalEl.textContent = totalClicks;
       
-      // Меняем эмодзи силы в зависимости от серии
-      const powerLevels = ["😐", "😠", "😡", "🤬", "💥", "🔥", "☠️"];
-      const powerIndex = Math.min(streak, powerLevels.length - 1);
-      powerElement.textContent = powerLevels[powerIndex];
+      const moodIndex = Math.min(currentStreak, MOOD_LEVELS.length - 1);
+      moodEl.textContent = MOOD_LEVELS[moodIndex];
       
-      // Меняем цвет кнопки
-      const hue = (totalClicks * 5) % 360;
-      rageButton.style.background = `
-        radial-gradient(circle at 30% 30%, 
-          hsl(${hue}, 100%, 60%) 0%, 
-          hsl(${hue}, 80%, 40%) 100%)
-      `;
+      // Динамический цвет кнопки
+      const hue = (totalClicks * 7) % 360;
+      rageButton.style.background = 
+        `radial-gradient(circle at 30% 30%, hsl(${hue}, 100%, 65%) 0%, hsl(${hue}, 85%, 45%) 100%)`;
     }
     
-    // Создать вылетающее слово
     function createSwearWord(x, y) {
       const word = document.createElement('div');
       word.className = 'swear-word';
       word.textContent = SWEAR_WORDS[Math.floor(Math.random() * SWEAR_WORDS.length)];
-      word.style.color = `hsl(${Math.random() * 360}, 100%, 65%)`;
+      word.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
       
-      // Случайное направление
       const angle = Math.random() * Math.PI * 2;
-      const distance = 150 + Math.random() * 200;
-      word.style.setProperty('--move-x', Math.cos(angle) * distance + 'px');
-      word.style.setProperty('--move-y', Math.sin(angle) * distance + 'px');
-      word.style.setProperty('--rotate', (Math.random() * 60 - 30) + 'deg');
+      const distance = 180 + Math.random() * 220;
+      word.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+      word.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+      word.style.setProperty('--rot', `${Math.random() * 60 - 30}deg`);
       
-      word.style.left = (x - 50) + 'px';
-      word.style.top = (y - 25) + 'px';
+      word.style.left = `${x - 60}px`;
+      word.style.top = `${y - 30}px`;
       
       document.body.appendChild(word);
-      setTimeout(() => word.remove(), 3000);
+      setTimeout(() => word.remove(), 3500);
     }
     
-    // Создать вылетающий эмодзи
     function createEmoji(x, y) {
       const emoji = document.createElement('div');
       emoji.className = 'emoji-particle';
       emoji.textContent = ANGRY_EMOJIS[Math.floor(Math.random() * ANGRY_EMOJIS.length)];
+      emoji.style.color = `hsl(${Math.random() * 360}, 100%, 65%)`;
       
       const angle = Math.random() * Math.PI * 2;
-      const distance = 100 + Math.random() * 150;
-      emoji.style.setProperty('--emoji-x', Math.cos(angle) * distance + 'px');
-      emoji.style.setProperty('--emoji-y', Math.sin(angle) * distance + 'px');
-      emoji.style.setProperty('--emoji-rotate', (Math.random() * 360) + 'deg');
+      const distance = 120 + Math.random() * 180;
+      emoji.style.setProperty('--ex', `${Math.cos(angle) * distance}px`);
+      emoji.style.setProperty('--ey', `${Math.sin(angle) * distance}px`);
+      emoji.style.setProperty('--erot', `${Math.random() * 360}deg`);
       
-      emoji.style.left = (x - 20) + 'px';
-      emoji.style.top = (y - 20) + 'px';
+      emoji.style.left = `${x - 30}px`;
+      emoji.style.top = `${y - 30}px`;
       
       document.body.appendChild(emoji);
       setTimeout(() => emoji.remove(), 4000);
     }
     
-    // Создать эффект взрыва
     function createExplosion(x, y) {
       const explosion = document.createElement('div');
-      explosion.className = 'explosion';
-      explosion.style.left = (x - 50) + 'px';
-      explosion.style.top = (y - 50) + 'px';
+      explosion.className = 'explosion-effect';
+      explosion.style.left = `${x - 60}px`;
+      explosion.style.top = `${y - 60}px`;
       
       document.body.appendChild(explosion);
-      setTimeout(() => explosion.remove(), 600);
+      setTimeout(() => explosion.remove(), 800);
     }
     
-    // Создать конфетти
     function createConfetti(x, y) {
-      const count = 15;
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < 12; i++) {
         const confetti = document.createElement('div');
-        confetti.className = 'confetti';
+        confetti.className = 'confetti-piece';
         confetti.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
-        confetti.style.left = (x - 6) + 'px';
-        confetti.style.top = (y - 6) + 'px';
-        confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+        confetti.style.left = `${x - 7}px`;
+        confetti.style.top = `${y - 7}px`;
+        confetti.style.animationDelay = `${Math.random() * 0.6}s`;
         
         document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 2000);
+        setTimeout(() => confetti.remove(), 2500);
       }
     }
     
-    // Показать ачивку
     function showAchievement(text) {
-      achievementText.textContent = text;
-      achievementElement.style.display = 'block';
+      const achievement = document.createElement('div');
+      achievement.className = 'achievement-popup';
+      achievement.textContent = text;
       
-      setTimeout(() => {
-        achievementElement.style.display = 'none';
-      }, 3000);
+      document.body.appendChild(achievement);
+      setTimeout(() => achievement.remove(), 2500);
     }
     
-    // Проверить ачивки
     function checkAchievements() {
-      achievements.forEach(ach => {
-        if (totalClicks >= ach.count && !unlockedAchievements.includes(ach.count)) {
-          unlockedAchievements.push(ach.count);
+      ACHIEVEMENTS.forEach(ach => {
+        if (totalClicks >= ach.count && !achieved.includes(ach.count)) {
+          achieved.push(ach.count);
           showAchievement(ach.text);
         }
       });
     }
     
-    // Обработчик нажатия
-    rageButton.addEventListener('click', function(e) {
+    function handleClick(x, y) {
       totalClicks++;
-      streak++;
+      currentStreak++;
       
-      // Координаты нажатия (для мобилок - центр кнопки)
-      const rect = this.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top + rect.height / 2;
-      
-      // Эффекты
+      // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
       createExplosion(x, y);
       createSwearWord(x, y);
       createEmoji(x, y);
-      if (streak % 5 === 0) createConfetti(x, y);
       
-      // Анимация кнопки
-      buttonGlow.style.opacity = '0.8';
-      setTimeout(() => {
-        buttonGlow.style.opacity = '0';
-      }, 300);
-      
-      // Вибрация (если доступно)
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
+      if (currentStreak % 5 === 0) {
+        createConfetti(x, y);
       }
       
-      // Обновить статистику
+      // АНИМАЦИЯ КНОПКИ
+      rageButton.classList.add('rage-button-active');
+      buttonGlow.style.opacity = '0.9';
+      
+      setTimeout(() => {
+        rageButton.classList.remove('rage-button-active');
+        buttonGlow.style.opacity = '0';
+      }, 150);
+      
+      // ВИБРАЦИЯ (если есть)
+      if (navigator.vibrate) {
+        navigator.vibrate([30, 20, 30]);
+      }
+      
+      // ОБНОВЛЕНИЕ
       updateStats();
       checkAchievements();
       
-      // Сброс серии через 3 секунды
-      clearTimeout(streakTimeout);
-      streakTimeout = setTimeout(() => {
-        streak = 0;
+      // СБРОС СЕРИИ
+      clearTimeout(streakTimer);
+      streakTimer = setTimeout(() => {
+        currentStreak = 0;
         updateStats();
       }, 3000);
+    }
+    
+    // =================== ОБРАБОТЧИКИ ===================
+    // ДЛЯ МЫШИ
+    rageButton.addEventListener('mousedown', function(e) {
+      const x = e.clientX;
+      const y = e.clientY;
+      handleClick(x, y);
     });
     
-    // Тач-события для мобилок
+    // ДЛЯ ТАЧСКРИНОВ (КРИТИЧНО ДЛЯ МОБИЛОК!)
     rageButton.addEventListener('touchstart', function(e) {
       e.preventDefault();
-      this.style.transform = 'scale(0.95)';
-    });
+      const touch = e.touches[0];
+      const x = touch.clientX;
+      const y = touch.clientY;
+      handleClick(x, y);
+    }, { passive: false });
     
     rageButton.addEventListener('touchend', function(e) {
       e.preventDefault();
-      this.style.transform = 'scale(1)';
+    }, { passive: false });
+    
+    // ДЛЯ КЛИКА (запасной вариант)
+    rageButton.addEventListener('click', function(e) {
+      const x = e.clientX || window.innerWidth / 2;
+      const y = e.clientY || window.innerHeight / 2;
+      handleClick(x, y);
     });
     
-    // Закрыть приложение
+    // ЗАКРЫТИЕ
     closeBtn.addEventListener('click', function() {
       Telegram.WebApp.close();
     });
     
-    // Инициализация
+    closeBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      Telegram.WebApp.close();
+    }, { passive: false });
+    
+    // =================== ИНИЦИАЛИЗАЦИЯ ===================
     updateStats();
+    
+    // Авто-тест (можно удалить)
+    // setInterval(() => {
+    //   if (Math.random() > 0.7) {
+    //     const x = 100 + Math.random() * (window.innerWidth - 200);
+    //     const y = 200 + Math.random() * (window.innerHeight - 400);
+    //     handleClick(x, y);
+    //   }
+    // }, 300);
   </script>
 </body>
 </html>
