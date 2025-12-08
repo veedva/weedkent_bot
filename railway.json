@@ -5,13 +5,10 @@
   },
   "start": "python bot/main.py",
   "services": [
-    {
-      "name": "postgres",
-      "type": "postgres"
-    },
-    {
-      "name": "redis",
-      "type": "redis"
-    }
-  ]
+    { "name": "postgres", "type": "postgres" },
+    { "name": "redis", "type": "redis" }
+  ],
+  "deploy": {
+    "startCommand": "gunicorn -k uvicorn.workers.UvicornWorker bot.web:app & python bot/main.py"
+  }
 }
