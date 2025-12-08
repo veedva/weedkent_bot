@@ -7,16 +7,13 @@ from aiogram.enums import ParseMode
 
 from bot.config import BOT_TOKEN
 from bot.handlers import router
+from bot.db import create_tables  # ← важно
 
-# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-# ФИНАЛЬНАЯ ВЕРСИЯ 2025 ГОДА
 bot = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode=ParseMode.HTML)
 )
 dp = Dispatcher(storage=MemoryStorage())
-# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-
 dp.include_router(router)
 
 async def on_startup():
@@ -28,9 +25,8 @@ async def main():
     await on_startup()
     await dp.start_polling(bot)
 
-if __name__ == "__main__":
-    asyncio.run(main())
 
+# 👇 временный запуск
 if __name__ == "__main__":
-    asyncio.run(create_tables())
-    asyncio.run(main())
+    asyncio.run(create_tables())  # ← создает таблицы
+    asyncio.run(main())           # ← запускает бота
