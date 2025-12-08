@@ -2,18 +2,22 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🤬 БЕСКОНЕЧНЫЙ КАТАРСИС</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>🤬 КАТАРСИС КЛИКЕР</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    /* RESET ДЛЯ МОБИЛЬНЫХ */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
       -webkit-user-select: none !important;
       user-select: none !important;
       touch-action: manipulation !important;
+      -webkit-text-size-adjust: none;
+      text-size-adjust: none;
     }
     
     html, body {
@@ -21,18 +25,38 @@
       height: 100%;
       overflow: hidden;
       position: fixed;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: #000;
       color: white;
       height: 100vh;
+      height: -webkit-fill-available;
+      height: fill-available;
       width: 100vw;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
     }
     
-    /* ЭКРАН ДЛЯ ТАПОВ */
+    /* SAFE AREA ПОДДЕРЖКА ДЛЯ IPHONE X+ */
+    @supports (padding: max(0px)) {
+      body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+      
+      .exit-btn {
+        margin-bottom: env(safe-area-inset-bottom);
+      }
+    }
+    
+    /* ЭКРАН ДЛЯ ТАПОВ - ОПТИМИЗИРОВАН ДЛЯ TOUCH */
     .tap-area {
       position: absolute;
       top: 0;
@@ -42,65 +66,42 @@
       background: transparent;
       z-index: 1;
       cursor: pointer;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
     }
     
-    /* УРОВЕНЬ ЯРОСТИ */
-    .rage-level {
-      position: absolute;
-      top: 60px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      z-index: 10;
-      color: #ffcc00;
-      text-shadow: 0 0 15px #ffcc00;
-      pointer-events: none;
-    }
-    
-    /* ПРОГРЕСС БАР */
-    .progress-container {
-      position: absolute;
-      bottom: 90px;
-      left: 30px;
-      right: 30px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      overflow: hidden;
-      z-index: 10;
-      pointer-events: none;
-    }
-    
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #ff4757, #ffcc00);
-      width: 0%;
-      transition: width 0.1s linear;
-      border-radius: 4px;
-    }
-    
-    /* КНОПКА ВЫХОДА */
+    /* КНОПКА ВЫХОДА - БОЛЬШЕ ДЛЯ ПАЛЬЦЕВ */
     .exit-btn {
       position: absolute;
-      bottom: 30px;
+      bottom: max(30px, env(safe-area-inset-bottom, 30px));
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.2);
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 14px 35px;
-      border-radius: 25px;
-      font-size: 17px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 16px 40px;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 600;
       z-index: 1002;
       cursor: pointer;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       -webkit-appearance: none;
       border: none;
+      min-width: 180px;
+      text-align: center;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
     }
     
-    /* КОНТЕЙНЕР ДЛЯ ЧАСТИЦ (ВАЖНО!) */
+    .exit-btn:active {
+      transform: translateX(-50%) scale(0.95);
+      background: rgba(255, 255, 255, 0.25);
+    }
+    
+    /* КОНТЕЙНЕР ДЛЯ ЧАСТИЦ - ЖЕСТКАЯ ОПТИМИЗАЦИЯ */
     .particles-container {
       position: absolute;
       top: 0;
@@ -110,85 +111,112 @@
       pointer-events: none;
       z-index: 5;
       overflow: hidden;
-      contain: strict; /* Оптимизация для браузера */
+      contain: strict;
+      will-change: transform;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
     }
     
-    /* ВЫЛЕТАЮЩИЕ СЛОВА */
+    /* ОПТИМИЗИРОВАННЫЕ ЧАСТИЦЫ */
     .rage-particle {
       position: absolute;
       pointer-events: none;
       opacity: 0;
       font-weight: 900;
-      animation: particleFloat 1.2s ease-out forwards;
-      will-change: transform, opacity; /* Оптимизация анимации */
+      animation: particleFly 1.2s ease-out forwards;
+      will-change: transform, opacity;
+      -webkit-font-smoothing: antialiased;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
     
     .rage-word {
-      font-family: 'Arial Black', Impact, sans-serif;
-      letter-spacing: 1px;
-      text-shadow: 0 0 10px currentColor, 0 0 20px rgba(255, 255, 255, 0.2);
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-shadow: 
+        0 0 12px currentColor,
+        0 0 24px currentColor,
+        2px 2px 4px rgba(0, 0, 0, 0.7);
     }
     
     .rage-emoji {
-      text-shadow: 0 0 12px currentColor, 0 0 25px rgba(255, 255, 255, 0.3);
+      text-shadow: 
+        0 0 16px currentColor,
+        0 0 32px currentColor;
     }
     
-    @keyframes particleFloat {
+    @keyframes particleFly {
       0% {
         opacity: 1;
-        transform: translate(0, 0) scale(var(--scale)) rotate(0deg);
+        transform: translate(0, 0) scale(0.8) rotate(0deg);
+        filter: blur(0);
       }
-      40% {
+      20% {
         opacity: 1;
-        transform: translate(var(--dx), var(--dy)) scale(calc(var(--scale) * 1.3)) rotate(var(--rot));
+        filter: blur(0);
       }
       100% {
         opacity: 0;
-        transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) * 1.3)) scale(calc(var(--scale) * 0.3));
+        transform: 
+          translate(var(--dx), var(--dy)) 
+          scale(var(--end-scale))
+          rotate(var(--rot));
+        filter: blur(2px);
       }
     }
     
-    /* ВСПЫШКА ЭКРАНА */
+    /* ПРОСТАЯ ВСПЫШКА */
     .screen-flash {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 71, 87, 0.25);
+      background: rgba(255, 71, 87, 0.2);
       opacity: 0;
       pointer-events: none;
       z-index: 2;
-      animation: quickFlash 0.25s ease-out;
-      will-change: opacity; /* Оптимизация */
+      animation: quickFlash 0.15s ease-out;
     }
     
     @keyframes quickFlash {
-      0% { opacity: 0.7; }
+      0% { opacity: 0.5; }
       100% { opacity: 0; }
     }
     
-    /* ТОЧКА УДАРА */
+    /* ТОЧКА УДАРА - ОПТИМИЗИРОВАННАЯ */
     .tap-hit {
       position: absolute;
-      width: 20px;
-      height: 20px;
-      background: rgba(255, 255, 255, 0.8);
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,100,100,0.6) 70%, transparent 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%) scale(0);
       pointer-events: none;
       z-index: 4;
-      animation: tapHitEffect 0.35s ease-out forwards;
-      will-change: transform, opacity; /* Оптимизация */
+      animation: tapExplode 0.4s ease-out forwards;
+      will-change: transform, opacity;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
     }
     
-    @keyframes tapHitEffect {
-      0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-      70% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.5; }
-      100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+    @keyframes tapExplode {
+      0% { 
+        transform: translate(-50%, -50%) scale(0); 
+        opacity: 1; 
+      }
+      50% { 
+        transform: translate(-50%, -50%) scale(1.5); 
+        opacity: 0.6; 
+      }
+      100% { 
+        transform: translate(-50%, -50%) scale(2); 
+        opacity: 0; 
+      }
     }
     
-    /* YOU DIED ЭКРАН */
+    /* YOU DIED ЭКРАН - ОРИГИНАЛЬНЫЙ ШРИФТ */
     .you-died-overlay {
       position: fixed;
       top: 0;
@@ -200,11 +228,12 @@
       z-index: 1000;
       align-items: center;
       justify-content: center;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
     
     .you-died-text {
-      font-family: 'Times New Roman', serif;
-      font-size: 14vw;
+      font-family: 'Times New Roman', Times, serif; /* ОРИГИНАЛЬНЫЙ ШРИФТ */
+      font-size: clamp(48px, 15vw, 96px);
       color: #8B0000;
       text-shadow: 
         0 0 30px #8B0000,
@@ -214,29 +243,16 @@
         5px 5px 0 rgba(0, 0, 0, 0.8);
       margin: 0;
       opacity: 0;
-      animation: darkSoulsDeath 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      animation: darkSoulsDeath 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
       text-transform: uppercase;
-      letter-spacing: 2vw;
+      letter-spacing: clamp(8px, 3vw, 16px);
       line-height: 1;
       text-align: center;
       white-space: nowrap;
-      padding: 0 5vw;
+      padding: 0 5%;
       max-width: 100%;
       transform-origin: center center;
-    }
-    
-    @media (max-width: 400px) {
-      .you-died-text {
-        font-size: 56px;
-        letter-spacing: 8px;
-      }
-    }
-    
-    @media (min-width: 800px) {
-      .you-died-text {
-        font-size: 112px;
-        letter-spacing: 16px;
-      }
+      font-weight: normal; /* Важно для Times New Roman */
     }
     
     @keyframes darkSoulsDeath {
@@ -244,6 +260,51 @@
         opacity: 0;
         transform: scale(3);
         filter: blur(50px) brightness(5);
+      }
+      10% {
+        opacity: 0.1;
+        transform: scale(2.8);
+        filter: blur(40px) brightness(4.5);
+      }
+      20% {
+        opacity: 0.2;
+        transform: scale(2.5);
+        filter: blur(35px) brightness(4);
+      }
+      30% {
+        opacity: 0.3;
+        transform: scale(2.2);
+        filter: blur(30px) brightness(3.5);
+      }
+      40% {
+        opacity: 0.4;
+        transform: scale(1.9);
+        filter: blur(25px) brightness(3);
+      }
+      50% {
+        opacity: 0.5;
+        transform: scale(1.6);
+        filter: blur(20px) brightness(2.5);
+      }
+      60% {
+        opacity: 0.6;
+        transform: scale(1.3);
+        filter: blur(15px) brightness(2);
+      }
+      70% {
+        opacity: 0.7;
+        transform: scale(1.15);
+        filter: blur(10px) brightness(1.8);
+      }
+      80% {
+        opacity: 0.8;
+        transform: scale(1.07);
+        filter: blur(5px) brightness(1.4);
+      }
+      90% {
+        opacity: 0.9;
+        transform: scale(1.02);
+        filter: blur(2px) brightness(1.2);
       }
       100% {
         opacity: 1;
@@ -264,53 +325,123 @@
       pointer-events: none;
       z-index: 900;
       animation: criticalFlash 1.5s ease-out;
-      will-change: opacity; /* Оптимизация */
     }
     
     @keyframes criticalFlash {
       0% { opacity: 0; }
-      5% { opacity: 0.8; }
-      15% { opacity: 0.7; }
-      30% { opacity: 0.5; }
-      50% { opacity: 0.3; }
-      70% { opacity: 0.15; }
-      90% { opacity: 0.05; }
+      8% { opacity: 0.8; }
+      20% { opacity: 0.6; }
+      40% { opacity: 0.4; }
+      60% { opacity: 0.2; }
       100% { opacity: 0; }
     }
     
-    /* ИНФОРМАЦИЯ О ТАПАХ */
-    .tap-info {
+    /* СЧЕТЧИК КЛИКОВ - БОЛЬШЕ ДЛЯ МОБИЛЬНЫХ */
+    .click-counter {
       position: absolute;
-      top: 100px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      font-size: 16px;
-      color: rgba(255, 255, 255, 0.7);
+      top: max(20px, env(safe-area-inset-top, 20px));
+      right: 20px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
       z-index: 10;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s;
+      text-align: right;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px 12px;
+      border-radius: 15px;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
     }
     
-    .tap-info.show {
+    .click-count {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffcc00;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+      display: block;
+      margin-top: 2px;
+    }
+    
+    /* ПОДСКАЗКА ДЛЯ ПЕРВОГО КЛИКА */
+    .tap-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: center;
+      z-index: 2;
+      pointer-events: none;
       opacity: 1;
+      transition: opacity 0.5s ease;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 20px 30px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      max-width: 80%;
+    }
+    
+    .tap-hint.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    /* АДАПТИВНЫЕ СТИЛИ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ */
+    @media (max-width: 360px) {
+      .exit-btn {
+        padding: 14px 30px;
+        font-size: 16px;
+        min-width: 160px;
+      }
+      
+      .click-counter {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+      
+      .click-count {
+        font-size: 18px;
+      }
+      
+      .tap-hint {
+        font-size: 16px;
+        padding: 15px 20px;
+      }
+    }
+    
+    /* ОТКЛЮЧЕНИЕ АНИМАЦИЙ ПРИ СНИЖЕНИИ БАТАРЕИ */
+    @media (prefers-reduced-motion: reduce) {
+      .rage-particle,
+      .tap-hit,
+      .screen-flash,
+      .critical-flash,
+      .you-died-text {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="rage-level" id="rageLevel">😐 СПОКОЙНО</div>
-  <div class="tap-info" id="tapInfo">Тапай регулярно, поддерживай темп!</div>
-  
-  <!-- КОНТЕЙНЕР ДЛЯ ЧАСТИЦ -->
-  <div class="particles-container" id="particlesContainer"></div>
-  
-  <div class="tap-area" id="tapArea"></div>
-  
-  <div class="progress-container">
-    <div class="progress-bar" id="progressBar"></div>
+  <!-- Счетчик кликов -->
+  <div class="click-counter">
+    КЛИКИ<br>
+    <span class="click-count" id="clickCount">0</span>
   </div>
   
+  <!-- Подсказка для первого клика -->
+  <div class="tap-hint" id="tapHint">ЖМИ НА ЭКРАН!</div>
+  
+  <!-- Контейнер для частиц -->
+  <div class="particles-container" id="particlesContainer"></div>
+  
+  <!-- Область для тапов -->
+  <div class="tap-area" id="tapArea"></div>
+  
+  <!-- Кнопка выхода -->
   <button class="exit-btn" onclick="Telegram.WebApp.close()">✖ ЗАКРЫТЬ</button>
   
   <!-- YOU DIED ЭКРАН -->
@@ -319,246 +450,152 @@
   </div>
 
   <script>
-    // =================== ТЕЛЕГРАМ ===================
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
+    // =================== ОПТИМИЗАЦИЯ ДЛЯ МОБИЛЬНЫХ ===================
     
-    if (Telegram.WebApp.BackButton) {
-      Telegram.WebApp.BackButton.show();
-      Telegram.WebApp.BackButton.onClick(() => Telegram.WebApp.close());
+    // Проверяем мобильное устройство
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    // =================== ТЕЛЕГРАМ ===================
+    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+      Telegram.WebApp.ready();
+      Telegram.WebApp.expand();
+      
+      if (Telegram.WebApp.BackButton) {
+        Telegram.WebApp.BackButton.show();
+        Telegram.WebApp.BackButton.onClick(() => Telegram.WebApp.close());
+      }
     }
     
-    // =================== ДАННЫЕ ===================
+    // =================== ОПТИМИЗИРОВАННЫЕ ДАННЫЕ ===================
     let rage = 0;
-    let lastTapTime = 0;
-    let soundEnabled = false;
-    let soundInitialized = false;
-    let soundCooldown = false;
-    let audioElements = [];
-    let youDiedSound = null;
-    let currentAudioIndex = 0;
-    let firstTapDone = false;
-    let youDiedShown = false;
-    let decayTimer = null;
+    let totalClicks = 0;
     let gameActive = true;
+    let youDiedShown = false;
+    let firstTapDone = false; // Флаг первого касания
     
-    // ОЧЕРЕДИ ДЛЯ ОПТИМИЗАЦИИ
-    let particleQueue = [];
-    let lastParticleTime = 0;
-    let tapCooldown = false;
-    let maxParticles = 12; // Ограничиваем количество частиц
+    // ОГРАНИЧЕНИЯ ДЛЯ МОБИЛЬНЫХ
+    const MAX_PARTICLES = isMobile ? 12 : 15;
+    const PARTICLE_COOLDOWN = isMobile ? 50 : 30;
+    const TAP_COOLDOWN = isMobile ? 35 : 20;
     
-    // Уровни ярости
-    const LEVELS = [
-      { emoji: "😐", name: "СПОКОЙНО", color: "#4dabf7", soundChance: 0.1 },
-      { emoji: "😠", name: "НАПРЯЖЕНИЕ", color: "#ffa94d", soundChance: 0.15 },
-      { emoji: "😡", name: "ЗЛОСТЬ", color: "#ff6b6b", soundChance: 0.2 },
-      { emoji: "🤬", name: "ЯРОСТЬ", color: "#ff4757", soundChance: 0.25 },
-      { emoji: "💥", name: "БЕШЕНСТВО", color: "#ffcc00", soundChance: 0.3 },
-      { emoji: "🔥", name: "ИСТЕРИКА", color: "#ff3838", soundChance: 0.35 }
-    ];
-    
-    // Слова и эмодзи
-    const WORDS = [
-      "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙ!", 
-      "ПИЗДОС!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ПОШЛИ НАХУЙ!", "ЁПТА!", 
-      "БЛЯДЬ!", "УЁБИЩЕ!", "ТВАРЬ!", "ПИЗДЕЦ!", "ЗАЛУПА!", "МРАЗЬ!"
-    ];
-    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️", "💣", "🧨"];
+    // Упрощенные данные для экономии памяти
+    const COLORS = ['#FF4757', '#FF3838', '#FF9F1A', '#FFCC00', '#32FF7E', '#18DCFF', '#7D5FFF'];
+    const WORDS = ['ПИЗДА!', 'СУКА!', 'ЕБАТЬ!', 'НАХУЙ!', 'БЛЯТЬ!', 'ХУЙНЯ!', 'ЁБАНЫЙ!', 'ОХУЕТЬ!'];
+    const EMOJIS = ['💩', '🤬', '😡', '👿', '💢', '🔥', '💥', '⚡', '☠️'];
     
     // =================== DOM ===================
     const tapArea = document.getElementById('tapArea');
-    const rageLevelEl = document.getElementById('rageLevel');
-    const progressBar = document.getElementById('progressBar');
+    const tapHint = document.getElementById('tapHint');
     const youDiedOverlay = document.getElementById('youDiedOverlay');
-    const tapInfo = document.getElementById('tapInfo');
     const particlesContainer = document.getElementById('particlesContainer');
+    const clickCountEl = document.getElementById('clickCount');
     
-    // =================== ОПТИМИЗАЦИЯ ЧАСТИЦ ===================
+    // =================== УПРАВЛЕНИЕ ПАМЯТЬЮ ===================
+    let particleQueue = [];
+    let lastParticleTime = 0;
+    let tapCooldown = false;
+    let particlesCreated = 0;
+    
+    // ОЧИСТКА СТАРЫХ ЧАСТИЦ
     function cleanupParticles() {
-      // Автоматическая очистка старых частиц
       const particles = particlesContainer.querySelectorAll('.rage-particle');
-      if (particles.length > maxParticles) {
-        const toRemove = particles.length - maxParticles;
+      if (particles.length > MAX_PARTICLES) {
+        const toRemove = particles.length - MAX_PARTICLES;
         for (let i = 0; i < toRemove; i++) {
           if (particles[i]) {
             particles[i].remove();
+            particlesCreated--;
           }
         }
       }
     }
     
-    // =================== ЗВУК ===================
-    function initSoundOnFirstTap() {
-      if (soundInitialized) return;
-      
-      // Звуки ударов
-      for (let i = 0; i < 3; i++) {
-        const audio = new Audio();
-        audio.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
-        audio.preload = "auto";
-        audio.volume = 0.5;
-        audioElements.push(audio);
-      }
-      
-      // Звук YOU DIED
-      youDiedSound = new Audio();
-      youDiedSound.src = "https://veedva.github.io/weedkent_bot/dark-souls-you-died.mp3";
-      youDiedSound.preload = "auto";
-      youDiedSound.volume = 0.8;
-      
-      soundInitialized = true;
-      soundEnabled = true;
-    }
-    
-    function playDamageSound() {
-      if (!soundEnabled || soundCooldown) return;
-      
-      const level = getCurrentLevel();
-      if (Math.random() > level.soundChance) return;
-      
-      try {
-        const audio = audioElements[currentAudioIndex];
-        currentAudioIndex = (currentAudioIndex + 1) % audioElements.length;
-        
-        audio.currentTime = 0;
-        audio.volume = 0.4 + (rage / 300);
-        audio.play().catch(() => {});
-        
-        soundCooldown = true;
-        setTimeout(() => { soundCooldown = false; }, 150);
-      } catch (error) {}
-    }
-    
-    function playYouDiedSound() {
-      if (!soundEnabled || !youDiedSound) return;
-      
-      try {
-        setTimeout(() => {
-          youDiedSound.currentTime = 0;
-          youDiedSound.volume = 0.8;
-          youDiedSound.play().catch(() => {});
-        }, 400);
-      } catch (error) {}
-    }
-    
-    // =================== ОСНОВНЫЕ ФУНКЦИИ ===================
-    function getCurrentLevel() {
-      const index = Math.floor(rage / 20);
-      return LEVELS[Math.min(index, LEVELS.length - 1)];
-    }
-    
-    function updateUI() {
-      const level = getCurrentLevel();
-      rageLevelEl.textContent = `${level.emoji} ${level.name}`;
-      rageLevelEl.style.color = level.color;
-      rageLevelEl.style.textShadow = `0 0 20px ${level.color}`;
-      progressBar.style.width = `${rage}%`;
-      progressBar.style.background = `linear-gradient(90deg, ${level.color}, #ffcc00)`;
-    }
-    
-    function updateTapInfo(message) {
-      tapInfo.textContent = message;
-      tapInfo.classList.add('show');
-      
-      setTimeout(() => {
-        tapInfo.classList.remove('show');
-      }, 1500);
-    }
-    
-    function createTapHit(x, y) {
-      const hit = document.createElement('div');
-      hit.className = 'tap-hit';
-      hit.style.left = `${x}px`;
-      hit.style.top = `${y}px`;
-      
-      const level = getCurrentLevel();
-      hit.style.background = level.color;
-      
-      document.body.appendChild(hit);
-      setTimeout(() => {
-        if (hit.parentNode) hit.remove();
-      }, 350);
-    }
-    
+    // СОЗДАНИЕ ОПТИМИЗИРОВАННЫХ ЧАСТИЦ
     function createParticle(x, y, isEmoji) {
       const now = Date.now();
       
-      // Ограничение частоты создания частиц
-      if (now - lastParticleTime < 50) {
-        // Добавляем в очередь, если слишком быстро
-        particleQueue.push({ x, y, isEmoji, time: now });
+      // Жесткое ограничение частоты
+      if (now - lastParticleTime < PARTICLE_COOLDOWN) {
         return;
       }
       
       lastParticleTime = now;
+      particlesCreated++;
       
+      // СОЗДАЕМ ПРОСТУЮ ЧАСТИЦУ
       const particle = document.createElement('div');
       particle.className = `rage-particle ${isEmoji ? 'rage-emoji' : 'rage-word'}`;
       particle.textContent = isEmoji 
         ? EMOJIS[Math.floor(Math.random() * EMOJIS.length)]
         : WORDS[Math.floor(Math.random() * WORDS.length)];
       
-      const intensity = Math.min(rage / 100, 1);
+      // МИНИМАЛЬНЫЕ СТИЛИ
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      particle.style.color = color;
       
-      // Более консервативные размеры
-      const baseSize = isEmoji ? 30 : 24;
-      const sizeMultiplier = 0.8 + (intensity * 0.8);
-      const fontSize = Math.floor(baseSize * sizeMultiplier);
+      // АДАПТИВНЫЕ РАЗМЕРЫ
+      const baseSize = isMobile ? (isEmoji ? 32 : 26) : (isEmoji ? 35 : 28);
+      const fontSize = Math.floor(baseSize * (0.8 + Math.random() * 0.4));
       particle.style.fontSize = `${fontSize}px`;
       
-      // Более короткая анимация
-      const baseDistance = 50;
-      const distanceMultiplier = 0.7 + (intensity * 1.2);
-      
+      // СИЛЬНЫЙ РАЗЛЕТ
+      const power = isMobile ? 70 : 90;
       const angle = Math.random() * Math.PI * 2;
-      const distance = baseDistance * distanceMultiplier;
+      const dx = Math.cos(angle) * power;
+      const dy = Math.sin(angle) * power * 0.6;
       
-      particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
-      particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-      particle.style.setProperty('--rot', `${Math.random() * 30 - 15}deg`);
-      particle.style.setProperty('--scale', sizeMultiplier);
+      particle.style.setProperty('--dx', `${dx}px`);
+      particle.style.setProperty('--dy', `${dy}px`);
+      particle.style.setProperty('--rot', `${Math.random() * 40 - 20}deg`);
+      particle.style.setProperty('--end-scale', '0.3');
       
+      // ПОЗИЦИЯ
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
       
-      const level = getCurrentLevel();
-      particle.style.color = level.color;
-      
+      // БЫСТРОЕ ДОБАВЛЕНИЕ И УДАЛЕНИЕ
       particlesContainer.appendChild(particle);
       
-      // Автоматическое удаление
       setTimeout(() => {
         if (particle.parentNode) {
           particle.remove();
+          particlesCreated--;
         }
       }, 1200);
       
-      cleanupParticles();
-      
-      // Обрабатываем очередь
-      if (particleQueue.length > 0) {
-        const next = particleQueue.shift();
-        if (next && now - next.time < 500) {
-          setTimeout(() => createParticle(next.x, next.y, next.isEmoji), 50);
+      // ПЕРИОДИЧЕСКАЯ ОЧИСТКА
+      if (particlesCreated > MAX_PARTICLES * 2) {
+        const allParticles = particlesContainer.querySelectorAll('.rage-particle');
+        if (allParticles.length > MAX_PARTICLES) {
+          allParticles[0].remove();
+          particlesCreated--;
         }
       }
     }
     
+    // ПРОСТЫЕ ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
+    function createTapHit(x, y) {
+      const hit = document.createElement('div');
+      hit.className = 'tap-hit';
+      hit.style.left = `${x}px`;
+      hit.style.top = `${y}px`;
+      
+      document.body.appendChild(hit);
+      setTimeout(() => {
+        if (hit.parentNode) hit.remove();
+      }, 400);
+    }
+    
     function createFlash() {
+      if (isMobile && Math.random() > 0.7) return;
+      
       const flash = document.createElement('div');
       flash.className = 'screen-flash';
-      
-      const level = getCurrentLevel();
-      const intensity = Math.min(rage / 100, 1);
-      const opacity = 0.15 + (intensity * 0.25);
-      
-      flash.style.background = `rgba(${parseInt(level.color.slice(1,3), 16)}, ${parseInt(level.color.slice(3,5), 16)}, ${parseInt(level.color.slice(5,7), 16)}, ${opacity})`;
-      
       document.body.appendChild(flash);
       setTimeout(() => {
         if (flash.parentNode) flash.remove();
-      }, 250);
+      }, 150);
     }
     
     function createCriticalFlash() {
@@ -570,145 +607,192 @@
       }, 1500);
     }
     
+    // YOU DIED ЭКРАН
     function showYouDied() {
       if (youDiedShown) return;
       youDiedShown = true;
       gameActive = false;
       
       tapArea.style.pointerEvents = 'none';
-      
       createCriticalFlash();
-      playYouDiedSound();
       
-      if (navigator.vibrate) {
-        navigator.vibrate([500, 150, 500]);
+      // ВИБРАЦИЯ
+      if (navigator.vibrate && isMobile) {
+        try {
+          navigator.vibrate([300, 100, 300]);
+        } catch (e) {}
       }
       
       setTimeout(() => {
         youDiedOverlay.style.display = 'flex';
-        rageLevelEl.style.display = 'none';
-        progressBar.parentElement.style.display = 'none';
-        tapInfo.style.display = 'none';
-      }, 250);
+      }, 200);
     }
     
-    // СБРОС ЯРОСТИ
-    function startDecay() {
-      if (decayTimer) clearTimeout(decayTimer);
-      
-      decayTimer = setTimeout(() => {
-        if (rage > 0) {
-          const decayRate = 1.5 + (rage / 40);
-          rage = Math.max(rage - decayRate, 0);
-          
-          if (gameActive) {
-            updateUI();
-          }
-          
-          if (rage > 0) {
-            startDecay();
-          }
-        }
-      }, 100);
-    }
-    
+    // =================== ОБРАБОТКА КАСАНИЙ ===================
     function handleTap(x, y) {
       if (!gameActive || tapCooldown) return;
       
-      // Защита от спама
-      tapCooldown = true;
-      setTimeout(() => { tapCooldown = false; }, 50);
-      
+      // Отмечаем первый тап
       if (!firstTapDone) {
         firstTapDone = true;
-        initSoundOnFirstTap();
       }
       
+      // ЗАЩИТА ОТ СПАМА
+      tapCooldown = true;
+      setTimeout(() => { tapCooldown = false; }, TAP_COOLDOWN);
+      
+      // СКРЫВАЕМ ПОДСКАЗКУ ПРИ ПЕРВОМ КАСАНИИ
+      if (tapHint && !tapHint.classList.contains('hidden')) {
+        tapHint.classList.add('hidden');
+      }
+      
+      // ОБНОВЛЯЕМ СЧЕТЧИК
+      totalClicks++;
+      clickCountEl.textContent = totalClicks;
+      
+      // УВЕЛИЧИВАЕМ ЯРОСТЬ
+      rage += 1.5 + Math.random() * 2;
+      
+      // ПРОВЕРКА НА СМЕРТЬ
       if (rage >= 100 && !youDiedShown) {
         showYouDied();
         return;
       }
       
-      const now = Date.now();
-      const timeDiff = lastTapTime === 0 ? 1000 : now - lastTapTime;
-      lastTapTime = now;
-      
-      // БАЛАНСИРОВКА
-      let rageGain = 3; // Уменьшили базовый прирост
-      
-      // Мягкий бонус за скорость (не слишком агрессивный)
-      if (timeDiff < 400) {
-        rageGain += Math.min(Math.floor(400 / timeDiff), 3);
-      }
-      
-      // Кап на максимальный прирост
-      rageGain = Math.min(rageGain, 6);
-      
-      rage = Math.min(rage + rageGain, 100);
-      
-      // ЗВУК
-      playDamageSound();
-      
       // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
       createTapHit(x, y);
       createFlash();
       
-      // ЧАСТИЦЫ (умеренное количество)
-      const particleCount = rage > 70 ? 3 : (rage > 40 ? 2 : 1);
+      // ЧАСТИЦЫ
+      const particleCount = isMobile ? 
+        (rage > 70 ? 2 : 1) : 
+        (rage > 70 ? 3 : 2);
       
       for (let i = 0; i < particleCount; i++) {
         setTimeout(() => {
-          const offsetX = (Math.random() * 40 - 20);
-          const offsetY = (Math.random() * 40 - 20);
-          
-          createParticle(x + offsetX, y + offsetY, i % 2 === 0);
-        }, i * 60); // Увеличили задержку между частицами
+          const offsetX = (Math.random() * 30 - 15);
+          const offsetY = (Math.random() * 30 - 15);
+          createParticle(x + offsetX, y + offsetY, Math.random() > 0.5);
+        }, i * 60);
       }
       
-      // ВИБРАЦИЯ (короче)
-      if (navigator.vibrate) {
-        const intensity = Math.min(rage / 100, 1);
-        const duration = Math.floor(8 + intensity * 15);
-        navigator.vibrate(duration);
+      // ВИБРАЦИЯ
+      if (navigator.vibrate && isMobile && rage > 30) {
+        try {
+          const duration = Math.min(15, 5 + Math.floor(rage / 10));
+          navigator.vibrate(duration);
+        } catch (e) {}
       }
       
-      updateUI();
-      startDecay();
+      // ПОСТЕПЕННОЕ УМЕНЬШЕНИЕ ЯРОСТИ
+      setTimeout(() => {
+        if (rage > 0) {
+          rage = Math.max(0, rage - 0.3);
+        }
+      }, 800);
     }
     
-    // =================== ОБРАБОТЧИКИ ===================
-    tapArea.addEventListener('click', function(e) {
-      handleTap(e.clientX, e.clientY);
-    });
+    // =================== ОБРАБОТЧИКИ СОБЫТИЙ ===================
+    
+    // ОПТИМИЗИРОВАННЫЙ ОБРАБОТЧИК КАСАНИЙ
+    let touchStartTime = 0;
     
     tapArea.addEventListener('touchstart', function(e) {
       e.preventDefault();
+      touchStartTime = Date.now();
+      
       const touch = e.touches[0];
       handleTap(touch.clientX, touch.clientY);
+      
+      // ОБРАБОТКА МУЛЬТИТАЧА
+      if (e.touches.length <= 2) {
+        for (let i = 1; i < e.touches.length; i++) {
+          const extraTouch = e.touches[i];
+          setTimeout(() => {
+            handleTap(extraTouch.clientX, extraTouch.clientY);
+          }, 50);
+        }
+      }
     }, { passive: false });
     
-    // =================== ИНИЦИАЛИЗАЦИЯ ===================
-    updateUI();
-    
-    setTimeout(() => {
-      if (rage === 0) {
-        updateTapInfo("Тапай по экрану!");
+    // КЛИК ДЛЯ ДЕСКТОПОВ
+    tapArea.addEventListener('click', function(e) {
+      if (!isMobile) {
+        handleTap(e.clientX, e.clientY);
       }
-    }, 1000);
+    });
     
-    startDecay();
+    // ПРЕДОТВРАЩАЕМ КОНТЕКСТНОЕ МЕНЮ НА МОБИЛЬНЫХ
+    document.addEventListener('contextmenu', function(e) {
+      if (isMobile) e.preventDefault();
+    });
     
-    // Регулярная очистка
-    setInterval(cleanupParticles, 2000);
+    // =================== ОПТИМИЗАЦИЯ ПАМЯТИ ===================
     
-    // Очистка при скрытии вкладки
+    // ОЧИСТКА ПРИ СКРЫТИИ ВКЛАДКИ
     document.addEventListener('visibilitychange', function() {
       if (document.hidden) {
+        // ОЧИЩАЕМ ВСЕ ЧАСТИЦЫ
         const particles = particlesContainer.querySelectorAll('.rage-particle');
         particles.forEach(p => p.remove());
+        particlesCreated = 0;
         particleQueue = [];
       }
     });
+    
+    // ПЕРИОДИЧЕСКАЯ ОЧИСТКА
+    setInterval(cleanupParticles, 2000);
+    
+    // АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ СЧЕТЧИКА
+    setInterval(() => {
+      if (rage > 0) {
+        rage = Math.max(0, rage - 0.1);
+      }
+    }, 1000);
+    
+    // ====== ВАЖНО: УБРАЛ ДЕМО-КЛИКИ ПРИ ЗАГРУЗКЕ ======
+    // Теперь при запуске не будет случайных кликов
+    
+    // АДАПТАЦИЯ ПОД ИЗМЕНЕНИЕ РАЗМЕРА ЭКРАНА
+    window.addEventListener('resize', function() {
+      // Очищаем частицы при повороте
+      const particles = particlesContainer.querySelectorAll('.rage-particle');
+      if (particles.length > MAX_PARTICLES) {
+        particles.forEach(p => p.remove());
+        particlesCreated = 0;
+      }
+    });
+    
+    // ПРЕДОТВРАЩЕНИЕ ЗАСЫПАНИЯ ЭКРАНА
+    if ('wakeLock' in navigator) {
+      let wakeLock = null;
+      try {
+        navigator.wakeLock.request('screen').then(lock => {
+          wakeLock = lock;
+        });
+      } catch (err) {}
+    }
+    
+    // ПРОСТАЯ ПОДСКАЗКА С АНИМАЦИЕЙ ПУЛЬСАЦИИ
+    if (tapHint) {
+      let pulseInterval = setInterval(() => {
+        if (!firstTapDone) {
+          tapHint.style.transform = `translate(-50%, -50%) scale(${1 + Math.sin(Date.now() / 500) * 0.1})`;
+        }
+      }, 50);
+      
+      // Останавливаем пульсацию после первого тапа
+      const stopPulse = () => {
+        if (pulseInterval) {
+          clearInterval(pulseInterval);
+          pulseInterval = null;
+        }
+      };
+      
+      // Останавливаем при любом касании
+      tapArea.addEventListener('touchstart', stopPulse, { once: true });
+      tapArea.addEventListener('click', stopPulse, { once: true });
+    }
   </script>
 </body>
 </html>
