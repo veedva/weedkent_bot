@@ -340,6 +340,369 @@
       youDiedSound.preload = "auto";
       youDiedSound.volume = 0.7;
       
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🤬 БЕСКОНЕЧНЫЙ КАТАРСИС</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* Импортируем шрифт Dark Souls */
+    @import url('https://fonts.cdnfonts.com/css/optimustime');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      touch-action: manipulation !important;
+      outline: none !important;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #000;
+      color: white;
+      height: 100vh;
+      width: 100vw;
+    }
+    
+    /* ЭКРАН ДЛЯ ТАПОВ */
+    .tap-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      z-index: 1;
+    }
+    
+    /* УРОВЕНЬ ЯРОСТИ */
+    .rage-level {
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      z-index: 10;
+      color: #ffcc00;
+      text-shadow: 0 0 15px #ffcc00;
+      pointer-events: none;
+    }
+    
+    /* ПРОГРЕСС БАР */
+    .progress-container {
+      position: absolute;
+      bottom: 90px;
+      left: 30px;
+      right: 30px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #ff4757, #ffcc00);
+      width: 0%;
+      transition: width 0.1s linear;
+      border-radius: 4px;
+    }
+    
+    /* КНОПКА ВЫХОДА */
+    .exit-btn {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 14px 35px;
+      border-radius: 25px;
+      font-size: 17px;
+      z-index: 10;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      -webkit-appearance: none;
+      border: none;
+    }
+    
+    /* ВЫЛЕТАЮЩИЕ СЛОВА */
+    .rage-particle {
+      position: absolute;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0;
+      font-weight: 900;
+      animation: particleFloat 2.2s ease-out forwards;
+      text-shadow: 0 0 15px currentColor, 0 0 30px rgba(255, 255, 255, 0.3);
+    }
+    
+    .rage-word {
+      font-size: 38px;
+      font-family: 'Arial Black', Impact, sans-serif;
+      letter-spacing: 1px;
+    }
+    
+    .rage-emoji {
+      font-size: 48px;
+    }
+    
+    @keyframes particleFloat {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(0.8) rotate(0deg);
+      }
+      25% {
+        opacity: 1;
+        transform: translate(var(--dx), var(--dy)) scale(1.8) rotate(var(--rot));
+      }
+      50% {
+        opacity: 0.9;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(calc(var(--dx) * 1.5), calc(var(--dy) * 1.5)) scale(0.4) rotate(calc(var(--rot) * 2));
+      }
+    }
+    
+    /* ВСПЫШКА */
+    .screen-flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 71, 87, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+      animation: quickFlash 0.3s ease-out;
+    }
+    
+    @keyframes quickFlash {
+      0% { opacity: 0.7; }
+      100% { opacity: 0; }
+    }
+    
+    /* YOU DIED ЭКРАН - ТОЧНАЯ КОПИЯ DARK SOULS */
+    .you-died {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .you-died-text {
+      font-family: 'OptimusTime', 'Times New Roman', serif;
+      font-size: 100px;
+      color: #8B0000;
+      text-shadow: 
+        0 0 10px #8B0000,
+        0 0 20px #8B0000,
+        0 0 30px #8B0000,
+        2px 2px 0 #000,
+        3px 3px 0 rgba(0, 0, 0, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 15px;
+      text-align: center;
+      opacity: 0;
+      animation: darkSoulsAppear 3.5s ease-out forwards;
+      line-height: 1;
+      padding: 20px;
+    }
+    
+    /* ТОЧНАЯ АНИМАЦИЯ КАК В DARK SOULS */
+    @keyframes darkSoulsAppear {
+      0% { 
+        opacity: 0;
+        transform: scale(3);
+        filter: blur(20px) brightness(3);
+      }
+      10% {
+        opacity: 0.3;
+        transform: scale(2.8);
+        filter: blur(15px) brightness(2.5);
+      }
+      20% {
+        opacity: 0.5;
+        transform: scale(2.5);
+        filter: blur(12px) brightness(2);
+      }
+      30% {
+        opacity: 0.7;
+        transform: scale(2.2);
+        filter: blur(9px) brightness(1.8);
+      }
+      40% {
+        opacity: 0.8;
+        transform: scale(1.9);
+        filter: blur(6px) brightness(1.6);
+      }
+      50% {
+        opacity: 0.9;
+        transform: scale(1.6);
+        filter: blur(4px) brightness(1.4);
+      }
+      60% {
+        opacity: 0.95;
+        transform: scale(1.3);
+        filter: blur(2px) brightness(1.2);
+      }
+      70% {
+        opacity: 1;
+        transform: scale(1.1);
+        filter: blur(1px) brightness(1.1);
+      }
+      80% {
+        opacity: 1;
+        transform: scale(1.05);
+        filter: blur(0.5px) brightness(1.05);
+      }
+      90% {
+        opacity: 1;
+        transform: scale(1.02);
+        filter: blur(0) brightness(1);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0) brightness(1);
+      }
+    }
+    
+    /* КРИТИЧЕСКАЯ ВСПЫШКА */
+    .critical-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #8B0000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 900;
+      animation: criticalFlash 1.5s ease-out;
+    }
+    
+    @keyframes criticalFlash {
+      0% { opacity: 0.9; }
+      20% { opacity: 0.8; }
+      40% { opacity: 0.5; }
+      60% { opacity: 0.3; }
+      80% { opacity: 0.1; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="rage-level" id="rageLevel">😐 СПОКОЙНО</div>
+  
+  <div class="tap-area" id="tapArea"></div>
+  
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  
+  <button class="exit-btn" onclick="Telegram.WebApp.close()">✖ ВЫЙТИ</button>
+  
+  <!-- YOU DIED ЭКРАН - только текст -->
+  <div class="you-died" id="youDied">
+    <div class="you-died-text">YOU DIED</div>
+  </div>
+
+  <script>
+    // =================== ТЕЛЕГРАМ ===================
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+    
+    if (Telegram.WebApp.BackButton) {
+      Telegram.WebApp.BackButton.show();
+      Telegram.WebApp.BackButton.onClick(() => Telegram.WebApp.close());
+    }
+    
+    // =================== ДАННЫЕ ===================
+    let rage = 0;
+    let lastTapTime = 0;
+    let activeParticles = 0;
+    const MAX_PARTICLES = 12;
+    let soundEnabled = false;
+    let soundInitialized = false;
+    let soundCooldown = false;
+    let audioElements = [];
+    let youDiedSound = null;
+    let currentAudioIndex = 0;
+    let firstTapDone = false;
+    let youDiedShown = false;
+    let decayTimer = null;
+    let gameActive = true;
+    
+    // Уровни ярости
+    const LEVELS = [
+      { emoji: "😐", name: "СПОКОЙНО", color: "#4dabf7", soundChance: 0.1 },
+      { emoji: "😠", name: "НАПРЯЖЕНИЕ", color: "#ffa94d", soundChance: 0.15 },
+      { emoji: "😡", name: "ЗЛОСТЬ", color: "#ff6b6b", soundChance: 0.2 },
+      { emoji: "🤬", name: "ЯРОСТЬ", color: "#ff4757", soundChance: 0.25 },
+      { emoji: "💥", name: "БЕШЕНСТВО", color: "#ffcc00", soundChance: 0.3 },
+      { emoji: "🔥", name: "ИСТЕРИКА", color: "#ff3838", soundChance: 0.35 }
+    ];
+    
+    // Слова и эмодзи
+    const WORDS = [
+      "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙНЯ!", 
+      "ЁБАНЫЙ!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ПОШЛО НАХУЙ!", "ЁПТА!", 
+      "БЛЯДЬ!", "ХУЁВО!", "ЕБЁНЫЙ!", "ПИЗДЕЦ!", "ЗАЛУПА!", "ПРОЕБАТЬ!"
+    ];
+    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️", "💣", "🧨"];
+    
+    // =================== DOM ===================
+    const tapArea = document.getElementById('tapArea');
+    const rageLevelEl = document.getElementById('rageLevel');
+    const progressBar = document.getElementById('progressBar');
+    const youDiedScreen = document.getElementById('youDied');
+    
+    // =================== ЗВУК ===================
+    function initSoundOnFirstTap() {
+      if (soundInitialized) return;
+      
+      // Звуки ударов
+      for (let i = 0; i < 2; i++) {
+        const audio = new Audio();
+        audio.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
+        audio.preload = "auto";
+        audio.volume = 0.5;
+        audioElements.push(audio);
+      }
+      
+      // Звук YOU DIED
+      youDiedSound = new Audio();
+      youDiedSound.src = "https://veedva.github.io/weedkent_bot/dark-souls-you-died.mp3";
+      youDiedSound.preload = "auto";
+      youDiedSound.volume = 0.8;
+      
       soundInitialized = true;
       soundEnabled = true;
       
@@ -378,7 +741,7 @@
       
       try {
         youDiedSound.currentTime = 0;
-        youDiedSound.volume = 0.7;
+        youDiedSound.volume = 0.8;
         youDiedSound.play().catch(() => {});
       } catch (error) {}
     }
@@ -390,6 +753,8 @@
     }
     
     function updateUI() {
+      if (!gameActive) return;
+      
       const level = getCurrentLevel();
       rageLevelEl.textContent = `${level.emoji} ${level.name}`;
       rageLevelEl.style.color = level.color;
@@ -399,7 +764,7 @@
     }
     
     function createParticle(x, y, isEmoji) {
-      if (activeParticles >= MAX_PARTICLES) return;
+      if (activeParticles >= MAX_PARTICLES || !gameActive) return;
       
       activeParticles++;
       
@@ -432,6 +797,8 @@
     }
     
     function createFlash() {
+      if (!gameActive) return;
+      
       const flash = document.createElement('div');
       flash.className = 'screen-flash';
       
@@ -446,50 +813,49 @@
       const flash = document.createElement('div');
       flash.className = 'critical-flash';
       document.body.appendChild(flash);
-      setTimeout(() => flash.remove(), 1200);
+      setTimeout(() => flash.remove(), 1500);
     }
     
     function showYouDied() {
       if (youDiedShown) return;
       youDiedShown = true;
+      gameActive = false;
+      
+      // Отключаем тап-область
+      tapArea.style.pointerEvents = 'none';
+      
+      // Скрываем UI
+      rageLevelEl.style.display = 'none';
+      progressBar.parentElement.style.display = 'none';
       
       // Критическая вспышка
       createCriticalFlash();
       
-      // Звук YOU DIED
-      playYouDiedSound();
+      // Звук YOU DIED (с небольшой задержкой как в игре)
+      setTimeout(() => {
+        playYouDiedSound();
+      }, 300);
+      
+      // Показываем экран YOU DIED
+      setTimeout(() => {
+        youDiedScreen.style.display = 'flex';
+      }, 500);
       
       // Вибрация
       if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200, 100, 400]);
-      }
-      
-      // Показываем экран через небольшую задержку
-      setTimeout(() => {
-        youDiedScreen.style.display = 'flex';
-        
-        // Автоматическое скрытие через 4 секунды
         setTimeout(() => {
-          youDiedScreen.style.display = 'none';
-          resetGame();
-        }, 4000);
-      }, 600);
+          navigator.vibrate([300, 200, 300]);
+        }, 400);
+      }
     }
     
-    function resetGame() {
-      rage = 0;
-      youDiedShown = false;
-      updateUI();
-    }
-    
-    // СБРОС ЯРОСТИ - МЕДЛЕННЕЕ!
+    // СБРОС ЯРОСТИ
     function startDecay() {
       if (decayTimer) clearTimeout(decayTimer);
       
       decayTimer = setTimeout(() => {
-        if (rage > 0) {
-          // МЕДЛЕННЫЙ СБРОС - даём время отдохнуть
-          const decayRate = 1.5 + (rage / 30); // От 1.5 до 5 единиц в секунду
+        if (rage > 0 && gameActive) {
+          const decayRate = 2 + (rage / 25);
           rage = Math.max(rage - decayRate, 0);
           updateUI();
           
@@ -501,6 +867,8 @@
     }
     
     function handleTap(x, y) {
+      if (!gameActive) return; // Игра окончена
+      
       if (!firstTapDone) {
         firstTapDone = true;
         initSoundOnFirstTap();
@@ -515,25 +883,20 @@
       const timeDiff = now - lastTapTime;
       lastTapTime = now;
       
-      // ЛЕГКИЙ РОСТ - можно достичь 100% нормальной скоростью!
+      // ЛЁГКИЙ РОСТ
       let rageGain = 0;
       
-      if (timeDiff < 150) { // Быстро (<150мс) - 10 очков
+      if (timeDiff < 200) { // Быстро (<200мс) - 12 очков
+        rageGain = 12;
+      } else if (timeDiff < 400) { // Средне (200-400мс) - 10 очков
         rageGain = 10;
-      } else if (timeDiff < 300) { // Средне (150-300мс) - 8 очков
+      } else { // Медленно (>400мс) - 8 очков
         rageGain = 8;
-      } else if (timeDiff < 500) { // Медленно (300-500мс) - 6 очков
-        rageGain = 6;
-      } else { // Очень медленно (>500мс) - 4 очка
-        rageGain = 4;
       }
       
-      // БОНУС за уровень ярости - чем выше, тем легче расти дальше!
-      const levelBonus = Math.floor(rage / 20) * 2;
+      // БОНУС за уровень
+      const levelBonus = Math.floor(rage / 15);
       rageGain += levelBonus;
-      
-      // МИНИМАЛЬНЫЙ ГАЙН - даже при одиночных тапах прогресс есть
-      rageGain = Math.max(rageGain, 4);
       
       rage = Math.min(rage + rageGain, 100);
       
@@ -557,7 +920,7 @@
       setTimeout(() => ripple.remove(), 1000);
       
       // ВЫЛЕТАЮЩИЕ ЭЛЕМЕНТЫ
-      const particleMultiplier = 1 + (rageGain / 5);
+      const particleMultiplier = 1 + (rageGain / 6);
       const baseParticles = Math.floor(2 * particleMultiplier);
       const particleCount = Math.min(baseParticles, 6);
       
@@ -575,15 +938,15 @@
         }, i * 80);
       }
       
-      // ВИБРАЦИЯ - только при высокой ярости
-      if (navigator.vibrate && rage > 40) {
-        const duration = Math.min(15 + rage / 4, 50);
+      // ВИБРАЦИЯ
+      if (navigator.vibrate && rage > 30) {
+        const duration = Math.min(10 + rage / 3, 40);
         navigator.vibrate(duration);
       }
       
       updateUI();
       
-      // ЗАПУСКАЕМ СБРОС (медленный)
+      // ЗАПУСКАЕМ СБРОС
       startDecay();
     }
     
