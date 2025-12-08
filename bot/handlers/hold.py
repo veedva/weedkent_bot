@@ -35,4 +35,8 @@ async def hold(message: Message):
     user.last_hold_time = now()
     await save_user(user)  # ← исправлено
 
-    await message.answer(random.choice(HOLD_RESPONSES)_)
+    await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
+
+    # пуш всем активным
+    await message.bot.send_message(message.from_user.id, "✊")
+
