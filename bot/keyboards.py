@@ -31,7 +31,7 @@ def heavy_keyboard():
 def webapp_button():
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="🌿 Мой прогресс", web_app=WebAppInfo(url="https://weedkent-bot.vercel.app"))],
+            [KeyboardButton(text="🌿 Мой прогресс", web_app=WebAppInfo(url="https://veedva.github.io/weedkent_bot/"))],
             [KeyboardButton(text="↩ Назад")]
         ],
         resize_keyboard=True
