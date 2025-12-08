@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🤬 ПИЗДЕЦ-ГЕНЕРАТОР</title>
+  <title>🤬 БЕСКОНЕЧНЫЙ ПИЗДЕЦ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    /* Полный сброс для мобилок */
     * {
       margin: 0;
       padding: 0;
@@ -17,596 +16,349 @@
       touch-action: manipulation !important;
     }
     
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #000;
       color: white;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-    }
-    
-    /* Хедер */
-    .header {
-      text-align: center;
-      padding-top: 10px;
-      width: 100%;
-      flex-shrink: 0;
-    }
-    
-    h1 {
-      font-size: 28px;
-      color: #ff4757;
-      text-shadow: 0 0 20px rgba(255, 71, 87, 0.7);
-      margin-bottom: 5px;
-    }
-    
-    .subtitle {
-      color: #aaa;
-      font-size: 14px;
-    }
-    
-    /* ОСНОВНАЯ КНОПКА - оптимизирована для тапа */
-    #rage-button {
-      width: 85vmin;
-      height: 85vmin;
-      max-width: 300px;
-      max-height: 300px;
-      min-width: 200px;
-      min-height: 200px;
-      
-      background: radial-gradient(circle at 30% 30%, #ff4757 0%, #c23636 100%);
-      border: none !important;
-      border-radius: 50%;
-      
-      color: white;
-      font-size: 32px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      
-      cursor: pointer;
-      margin: auto;
-      
-      transition: transform 0.15s ease;
-      transform: scale(1);
-      
-      box-shadow: 
-        0 15px 35px rgba(255, 71, 87, 0.5),
-        inset 0 -10px 25px rgba(0, 0, 0, 0.4),
-        inset 0 10px 25px rgba(255, 255, 255, 0.15);
-      
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
       overflow: hidden;
-      
-      /* Критично для мобилок */
-      outline: none !important;
-      -webkit-appearance: none !important;
-      -webkit-touch-callout: none !important;
-      -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-      touch-action: manipulation !important;
+      position: fixed;
+      width: 100%;
     }
     
-    /* Анимация нажатия - РАБОТАЕТ НА МОБИЛКЕ */
-    .rage-button-active {
-      transform: scale(0.88) !important;
-      box-shadow: 
-        0 5px 20px rgba(255, 71, 87, 0.8),
-        inset 0 -5px 15px rgba(0, 0, 0, 0.6),
-        inset 0 5px 15px rgba(255, 255, 255, 0.25) !important;
-    }
-    
-    /* Свечение кнопки */
-    .button-glow {
+    /* КНОПКА НА ВЕСЬ ЭКРАН */
+    #rage-button {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
-      opacity: 0;
-      border-radius: 50%;
-      transition: opacity 0.3s;
-      pointer-events: none;
+      background: #000;
+      border: none;
+      cursor: pointer;
+      z-index: 1;
+      outline: none;
     }
     
-    /* ВЫЛЕТАЮЩИЕ СЛОВА - большие и медленные */
-    .swear-word {
+    /* СЛОВА И ЭМОДЗИ */
+    .floating-element {
       position: absolute;
       pointer-events: none;
-      font-size: 32px; /* Больше! */
+      z-index: 10;
+      opacity: 0;
       font-weight: 900;
-      z-index: 1000;
-      text-shadow: 
-        0 0 15px currentColor,
-        0 0 30px currentColor,
-        3px 3px 0 rgba(0, 0, 0, 0.7);
-      opacity: 1;
-      animation: wordFloat 3.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-      white-space: nowrap;
+      text-shadow: 0 0 20px currentColor, 0 0 40px rgba(255, 255, 255, 0.5);
+      animation: floatElement 3.5s ease-out forwards;
+    }
+    
+    .word {
+      font-size: 42px;
       font-family: 'Arial Black', Impact, sans-serif;
     }
     
-    @keyframes wordFloat {
+    .emoji {
+      font-size: 64px;
+    }
+    
+    @keyframes floatElement {
       0% {
         opacity: 1;
-        transform: translate(0, 0) rotate(0deg) scale(0.8);
+        transform: translate(0, 0) scale(0.8) rotate(0deg);
         filter: blur(0);
       }
       20% {
         opacity: 1;
-        transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.8);
+        transform: translate(var(--tx), var(--ty)) scale(2) rotate(var(--rot));
       }
       40% {
         opacity: 1;
-        filter: blur(0);
       }
       100% {
         opacity: 0;
-        transform: translate(calc(var(--tx) * 1.8), calc(var(--ty) * 1.8)) rotate(calc(var(--rot) * 2)) scale(0.5);
-        filter: blur(3px);
+        transform: translate(calc(var(--tx) * 1.5), calc(var(--ty) * 1.5)) scale(0.5) rotate(calc(var(--rot) * 2));
+        filter: blur(4px);
       }
     }
     
-    /* ВЫЛЕТАЮЩИЕ ЭМОДЗИ */
-    .emoji-particle {
+    /* ЭФФЕКТ ВСПЫШКИ */
+    .flash {
       position: absolute;
-      pointer-events: none;
-      font-size: 48px; /* Ещё больше! */
-      z-index: 1000;
-      opacity: 1;
-      animation: emojiFloat 4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-      text-shadow: 0 0 20px currentColor;
-    }
-    
-    @keyframes emojiFloat {
-      0% {
-        opacity: 1;
-        transform: translate(0, 0) rotate(0deg) scale(0.7);
-      }
-      25% {
-        opacity: 1;
-        transform: translate(var(--ex), var(--ey)) rotate(var(--erot)) scale(2.2);
-      }
-      100% {
-        opacity: 0;
-        transform: translate(calc(var(--ex) * 2), calc(var(--ey) * 2)) rotate(calc(var(--erot) * 3)) scale(0.3);
-      }
-    }
-    
-    /* ЭФФЕКТ ВЗРЫВА */
-    .explosion-effect {
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 71, 87, 0.9) 0%, transparent 80%);
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 71, 87, 0.3);
       opacity: 0;
       pointer-events: none;
-      animation: explosion 0.8s ease-out;
-      z-index: 500;
+      z-index: 5;
+      animation: flashEffect 0.4s ease-out;
     }
     
-    @keyframes explosion {
+    @keyframes flashEffect {
+      0% { opacity: 0.8; }
+      100% { opacity: 0; }
+    }
+    
+    /* ПУЛЬСАЦИЯ КНОПКИ */
+    .pulse {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 71, 87, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+      animation: pulseWave 1.2s ease-out;
+    }
+    
+    @keyframes pulseWave {
       0% {
-        opacity: 1;
+        opacity: 0.7;
         transform: scale(0.1);
       }
-      50% {
-        opacity: 0.8;
-        transform: scale(2.5);
-      }
       100% {
         opacity: 0;
-        transform: scale(4);
+        transform: scale(3);
       }
     }
     
-    /* КОНФЕТТИ */
-    .confetti-piece {
+    /* ПРОГРЕСС БАР НАРАСТАНИЯ */
+    .progress-container {
       position: absolute;
-      width: 14px;
-      height: 14px;
-      background: #ff4757;
-      opacity: 0;
-      animation: confettiDrop 2.5s linear forwards;
+      bottom: 30px;
+      left: 20px;
+      right: 20px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      z-index: 20;
+      opacity: 0.7;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #ff4757, #ffcc00);
+      width: 0%;
+      transition: width 0.5s ease;
       border-radius: 3px;
     }
     
-    @keyframes confettiDrop {
-      0% {
-        opacity: 1;
-        transform: translateY(-100px) rotate(0deg);
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(100vh) rotate(720deg);
-      }
-    }
-    
-    /* СТАТИСТИКА (минимум) */
-    .stats {
-      display: flex;
-      justify-content: space-around;
-      width: 100%;
-      max-width: 400px;
-      padding: 12px;
-      background: rgba(255, 71, 87, 0.1);
-      border-radius: 20px;
-      border: 1px solid rgba(255, 71, 87, 0.2);
-      margin: 10px 0;
-      opacity: 0.7;
-      flex-shrink: 0;
-    }
-    
-    .stat {
+    /* ИНСТРУКЦИЯ */
+    .instruction {
+      position: absolute;
+      top: 30px;
+      left: 0;
+      right: 0;
       text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 26px;
-      font-weight: bold;
-      color: #ffcc00;
-    }
-    
-    .stat-label {
-      font-size: 10px;
+      font-size: 18px;
       color: #888;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 3px;
+      z-index: 20;
+      padding: 0 20px;
+      opacity: 0.8;
     }
     
-    /* КНОПКА ЗАКРЫТИЯ */
-    #close-btn {
-      background: rgba(255, 71, 87, 0.25);
-      color: white;
-      border: 2px solid rgba(255, 71, 87, 0.5);
-      padding: 16px 0;
-      border-radius: 25px;
-      font-size: 17px;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 15px 0;
-      transition: all 0.2s;
-      width: 90%;
-      max-width: 320px;
-      flex-shrink: 0;
-      
-      /* Для мобилок */
-      outline: none !important;
-      -webkit-appearance: none !important;
-      -webkit-tap-highlight-color: rgba(255, 71, 87, 0.3) !important;
-    }
-    
-    #close-btn:active {
-      background: rgba(255, 71, 87, 0.4);
-      transform: scale(0.97);
-    }
-    
-    /* АЧИВКИ */
-    .achievement-popup {
-      position: fixed;
-      top: 50%;
+    /* КНОПКА ВЫХОДА */
+    .exit-btn {
+      position: absolute;
+      bottom: 70px;
       left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      background: linear-gradient(45deg, #ff4757, #ffcc00);
-      color: black;
-      padding: 20px 30px;
-      border-radius: 20px;
-      font-weight: bold;
-      font-size: 20px;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      z-index: 20;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+    
+    .exit-btn:active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* УРОВЕНЬ БЕШЕНСТВА */
+    .rage-level {
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
       text-align: center;
-      z-index: 2000;
-      box-shadow: 0 10px 40px rgba(255, 71, 87, 0.7);
-      animation: achievementShow 2.5s ease-out forwards;
-      pointer-events: none;
-    }
-    
-    @keyframes achievementShow {
-      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-      15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-      20% { transform: translate(-50%, -50%) scale(1); }
-      80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-    }
-    
-    /* АДАПТИВНОСТЬ */
-    @media (max-width: 480px) {
-      h1 { font-size: 24px; }
-      #rage-button { 
-        font-size: 28px;
-        width: 80vmin;
-        height: 80vmin;
-      }
-      .swear-word { font-size: 28px; }
-      .emoji-particle { font-size: 40px; }
-    }
-    
-    @media (max-height: 700px) {
-      .header { padding-top: 5px; }
-      h1 { font-size: 22px; margin-bottom: 2px; }
-      .subtitle { font-size: 12px; }
-      #rage-button {
-        width: 75vmin;
-        height: 75vmin;
-      }
-      .stats { padding: 8px; margin: 5px 0; }
+      font-size: 24px;
+      font-weight: bold;
+      z-index: 20;
+      color: #ffcc00;
+      text-shadow: 0 0 10px #ffcc00;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🤬 ПИЗДЕЦ-ГЕНЕРАТОР</h1>
-    <div class="subtitle">ЖМИ КНОПКУ → ВЫПУСТИ ПАР → ЧУВСТВУЙ ОБЛЕГЧЕНИЕ</div>
+  <div class="instruction">БЕЙ ПО ЭКРАНУ В ЛЮБОМ МЕСТЕ</div>
+  <div class="rage-level" id="rageLevel">😐 СПОКОЙСТВИЕ</div>
+  
+  <button id="rage-button"></button>
+  
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
   </div>
   
-  <button id="rage-button">
-    <span class="button-text">ПИЗДЕЦ!</span>
-    <div class="button-glow" id="buttonGlow"></div>
-  </button>
-  
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-value" id="streak">0</div>
-      <div class="stat-label">серия</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value" id="total">0</div>
-      <div class="stat-label">нажатий</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value" id="mood">😐</div>
-      <div class="stat-label">настрой</div>
-    </div>
-  </div>
-  
-  <button id="close-btn">✖ ВЕРНУТЬСЯ В БОТА</button>
-  
+  <button class="exit-btn" onclick="Telegram.WebApp.close()">✖ ВЫЙТИ</button>
+
   <script>
-    // =================== ТЕЛЕГРАМ ===================
+    // Telegram
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
     
     if (Telegram.WebApp.BackButton) {
       Telegram.WebApp.BackButton.show();
-      Telegram.WebApp.BackButton.onClick(() => {
-        Telegram.WebApp.close();
-      });
+      Telegram.WebApp.BackButton.onClick(() => Telegram.WebApp.close());
     }
     
-    // =================== ДАННЫЕ ===================
-    let totalClicks = 0;
-    let currentStreak = 0;
-    let streakTimer = null;
-    const achieved = [];
+    // Данные
+    let rageLevel = 0;
+    let rageMultiplier = 1;
+    let lastClickTime = 0;
     
-    const SWEAR_WORDS = [
-      "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", 
-      "ХУЙНЯ!", "ЁБАНЫЙ!", "ПИЗДЕЦ!", "ОХУЕТЬ!", "ЗАЕБАЛО!",
-      "ПОШЛО НАХУЙ!", "ЁПТА!", "БЛЯДЬ!", "ХУЁВО!", "ЕБЁНЫЙ!"
+    const RAGE_LEVELS = [
+      { emoji: "😐", name: "СПОКОЙСТВИЕ", intensity: 1 },
+      { emoji: "😠", name: "РАЗДРАЖЕНИЕ", intensity: 1.5 },
+      { emoji: "😡", name: "ЗЛОСТЬ", intensity: 2 },
+      { emoji: "🤬", name: "ЯРОСТЬ", intensity: 3 },
+      { emoji: "💥", name: "БЕШЕНСТВО", intensity: 4 },
+      { emoji: "🔥", name: "ИСТЕРИКА", intensity: 5 },
+      { emoji: "☠️", name: "АПОКАЛИПСИС", intensity: 6 }
     ];
     
-    const ANGRY_EMOJIS = [
-      "💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️",
-      "😤", "🤯", "👹", "😾", "🗯️", "💣", "🧨", "🖕", "💀", "🦹"
-    ];
+    const WORDS = ["ПИЗДЕЦ", "СУКА", "ЕБАТЬ", "НАХУЙ", "БЛЯТЬ", "ХУЙНЯ", "ЁБАНЫЙ", "ОХУЕТЬ", "ЗАЕБАЛО"];
+    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️", "💣", "🧨"];
     
-    const MOOD_LEVELS = ["😐", "😠", "😡", "🤬", "💥", "🔥", "☠️", "👑"];
-    const ACHIEVEMENTS = [
-      { count: 5, text: "👶 НОВИЧОК ГНЕВА" },
-      { count: 15, text: "💪 МАСТЕР РЕЛАКСА" },
-      { count: 30, text: "🔥 КОРОЛЬ КАТАРСИСА" },
-      { count: 50, text: "👑 БОГ СПОКОЙСТВИЯ" }
-    ];
-    
-    // =================== DOM ===================
-    const rageButton = document.getElementById('rage-button');
-    const buttonGlow = document.getElementById('buttonGlow');
-    const closeBtn = document.getElementById('close-btn');
-    const streakEl = document.getElementById('streak');
-    const totalEl = document.getElementById('total');
-    const moodEl = document.getElementById('mood');
-    
-    // =================== ФУНКЦИИ ===================
-    function updateStats() {
-      streakEl.textContent = currentStreak;
-      totalEl.textContent = totalClicks;
-      
-      const moodIndex = Math.min(currentStreak, MOOD_LEVELS.length - 1);
-      moodEl.textContent = MOOD_LEVELS[moodIndex];
-      
-      // Динамический цвет кнопки
-      const hue = (totalClicks * 7) % 360;
-      rageButton.style.background = 
-        `radial-gradient(circle at 30% 30%, hsl(${hue}, 100%, 65%) 0%, hsl(${hue}, 85%, 45%) 100%)`;
+    // Функции
+    function getCurrentLevel() {
+      return RAGE_LEVELS[Math.min(rageLevel, RAGE_LEVELS.length - 1)];
     }
     
-    function createSwearWord(x, y) {
-      const word = document.createElement('div');
-      word.className = 'swear-word';
-      word.textContent = SWEAR_WORDS[Math.floor(Math.random() * SWEAR_WORDS.length)];
-      word.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+    function updateUI() {
+      const level = getCurrentLevel();
+      document.getElementById('rageLevel').textContent = `${level.emoji} ${level.name}`;
+      document.getElementById('progressBar').style.width = `${Math.min(rageLevel * 10, 100)}%`;
+    }
+    
+    function createElement(x, y, type, content) {
+      const el = document.createElement('div');
+      el.className = `floating-element ${type}`;
+      el.textContent = content;
       
+      // Случайное направление и цвет
       const angle = Math.random() * Math.PI * 2;
-      const distance = 180 + Math.random() * 220;
-      word.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
-      word.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
-      word.style.setProperty('--rot', `${Math.random() * 60 - 30}deg`);
+      const distance = 100 + Math.random() * 200 * rageMultiplier;
+      el.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+      el.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+      el.style.setProperty('--rot', `${Math.random() * 60 - 30}deg`);
       
-      word.style.left = `${x - 60}px`;
-      word.style.top = `${y - 30}px`;
-      
-      document.body.appendChild(word);
-      setTimeout(() => word.remove(), 3500);
-    }
-    
-    function createEmoji(x, y) {
-      const emoji = document.createElement('div');
-      emoji.className = 'emoji-particle';
-      emoji.textContent = ANGRY_EMOJIS[Math.floor(Math.random() * ANGRY_EMOJIS.length)];
-      emoji.style.color = `hsl(${Math.random() * 360}, 100%, 65%)`;
-      
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 120 + Math.random() * 180;
-      emoji.style.setProperty('--ex', `${Math.cos(angle) * distance}px`);
-      emoji.style.setProperty('--ey', `${Math.sin(angle) * distance}px`);
-      emoji.style.setProperty('--erot', `${Math.random() * 360}deg`);
-      
-      emoji.style.left = `${x - 30}px`;
-      emoji.style.top = `${y - 30}px`;
-      
-      document.body.appendChild(emoji);
-      setTimeout(() => emoji.remove(), 4000);
-    }
-    
-    function createExplosion(x, y) {
-      const explosion = document.createElement('div');
-      explosion.className = 'explosion-effect';
-      explosion.style.left = `${x - 60}px`;
-      explosion.style.top = `${y - 60}px`;
-      
-      document.body.appendChild(explosion);
-      setTimeout(() => explosion.remove(), 800);
-    }
-    
-    function createConfetti(x, y) {
-      for (let i = 0; i < 12; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti-piece';
-        confetti.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
-        confetti.style.left = `${x - 7}px`;
-        confetti.style.top = `${y - 7}px`;
-        confetti.style.animationDelay = `${Math.random() * 0.6}s`;
-        
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 2500);
-      }
-    }
-    
-    function showAchievement(text) {
-      const achievement = document.createElement('div');
-      achievement.className = 'achievement-popup';
-      achievement.textContent = text;
-      
-      document.body.appendChild(achievement);
-      setTimeout(() => achievement.remove(), 2500);
-    }
-    
-    function checkAchievements() {
-      ACHIEVEMENTS.forEach(ach => {
-        if (totalClicks >= ach.count && !achieved.includes(ach.count)) {
-          achieved.push(ach.count);
-          showAchievement(ach.text);
-        }
-      });
-    }
-    
-    function handleClick(x, y) {
-      totalClicks++;
-      currentStreak++;
-      
-      // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
-      createExplosion(x, y);
-      createSwearWord(x, y);
-      createEmoji(x, y);
-      
-      if (currentStreak % 5 === 0) {
-        createConfetti(x, y);
+      if (type === 'word') {
+        el.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+      } else {
+        el.style.color = `hsl(${Math.random() * 360}, 100%, 65%)`;
       }
       
-      // АНИМАЦИЯ КНОПКИ
-      rageButton.classList.add('rage-button-active');
-      buttonGlow.style.opacity = '0.9';
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
       
-      setTimeout(() => {
-        rageButton.classList.remove('rage-button-active');
-        buttonGlow.style.opacity = '0';
-      }, 150);
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+    
+    function createFlash(x, y) {
+      const flash = document.createElement('div');
+      flash.className = 'flash';
+      flash.style.left = `${x}px`;
+      flash.style.top = `${y}px`;
       
-      // ВИБРАЦИЯ (если есть)
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 400);
+    }
+    
+    function createPulse(x, y) {
+      const pulse = document.createElement('div');
+      pulse.className = 'pulse';
+      pulse.style.left = `${x}px`;
+      pulse.style.top = `${y}px`;
+      pulse.style.width = pulse.style.height = `${50 * rageMultiplier}px`;
+      
+      document.body.appendChild(pulse);
+      setTimeout(() => pulse.remove(), 1200);
+    }
+    
+    function handleTap(x, y) {
+      const now = Date.now();
+      const timeDiff = now - lastClickTime;
+      lastClickTime = now;
+      
+      // Увеличиваем уровень бешенства если клики частые
+      if (timeDiff < 500) {
+        rageLevel = Math.min(rageLevel + 1, RAGE_LEVELS.length - 1);
+        rageMultiplier = getCurrentLevel().intensity;
+      } else if (timeDiff > 2000) {
+        // Сбрасываем если долго не кликали
+        rageLevel = Math.max(0, rageLevel - 1);
+        rageMultiplier = getCurrentLevel().intensity;
+      }
+      
+      // Визуальные эффекты
+      createFlash(x, y);
+      createPulse(x, y);
+      
+      // Количество элементов зависит от уровня
+      const elementCount = Math.floor(2 * rageMultiplier);
+      
+      for (let i = 0; i < elementCount; i++) {
+        setTimeout(() => {
+          // Слова
+          if (Math.random() > 0.3) {
+            const wordX = x + (Math.random() * 100 - 50);
+            const wordY = y + (Math.random() * 100 - 50);
+            createElement(wordX, wordY, 'word', WORDS[Math.floor(Math.random() * WORDS.length)]);
+          }
+          
+          // Эмодзи
+          if (Math.random() > 0.5) {
+            const emojiX = x + (Math.random() * 120 - 60);
+            const emojiY = y + (Math.random() * 120 - 60);
+            createElement(emojiX, emojiY, 'emoji', EMOJIS[Math.floor(Math.random() * EMOJIS.length)]);
+          }
+        }, i * 50);
+      }
+      
+      // Вибрация
       if (navigator.vibrate) {
-        navigator.vibrate([30, 20, 30]);
+        const pattern = rageLevel > 3 ? [50, 30, 50] : [30];
+        navigator.vibrate(pattern);
       }
       
-      // ОБНОВЛЕНИЕ
-      updateStats();
-      checkAchievements();
-      
-      // СБРОС СЕРИИ
-      clearTimeout(streakTimer);
-      streakTimer = setTimeout(() => {
-        currentStreak = 0;
-        updateStats();
-      }, 3000);
+      updateUI();
     }
     
-    // =================== ОБРАБОТЧИКИ ===================
-    // ДЛЯ МЫШИ
-    rageButton.addEventListener('mousedown', function(e) {
-      const x = e.clientX;
-      const y = e.clientY;
-      handleClick(x, y);
+    // Обработчики
+    document.getElementById('rage-button').addEventListener('click', function(e) {
+      handleTap(e.clientX, e.clientY);
     });
     
-    // ДЛЯ ТАЧСКРИНОВ (КРИТИЧНО ДЛЯ МОБИЛОК!)
-    rageButton.addEventListener('touchstart', function(e) {
+    document.getElementById('rage-button').addEventListener('touchstart', function(e) {
       e.preventDefault();
       const touch = e.touches[0];
-      const x = touch.clientX;
-      const y = touch.clientY;
-      handleClick(x, y);
+      handleTap(touch.clientX, touch.clientY);
     }, { passive: false });
     
-    rageButton.addEventListener('touchend', function(e) {
-      e.preventDefault();
-    }, { passive: false });
+    // Авто-сброс уровня
+    setInterval(() => {
+      if (Date.now() - lastClickTime > 3000 && rageLevel > 0) {
+        rageLevel--;
+        rageMultiplier = getCurrentLevel().intensity;
+        updateUI();
+      }
+    }, 1000);
     
-    // ДЛЯ КЛИКА (запасной вариант)
-    rageButton.addEventListener('click', function(e) {
-      const x = e.clientX || window.innerWidth / 2;
-      const y = e.clientY || window.innerHeight / 2;
-      handleClick(x, y);
-    });
-    
-    // ЗАКРЫТИЕ
-    closeBtn.addEventListener('click', function() {
-      Telegram.WebApp.close();
-    });
-    
-    closeBtn.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      Telegram.WebApp.close();
-    }, { passive: false });
-    
-    // =================== ИНИЦИАЛИЗАЦИЯ ===================
-    updateStats();
-    
-    // Авто-тест (можно удалить)
-    // setInterval(() => {
-    //   if (Math.random() > 0.7) {
-    //     const x = 100 + Math.random() * (window.innerWidth - 200);
-    //     const y = 200 + Math.random() * (window.innerHeight - 400);
-    //     handleClick(x, y);
-    //   }
-    // }, 300);
+    // Инициализация
+    updateUI();
   </script>
 </body>
 </html>
