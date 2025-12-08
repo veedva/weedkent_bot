@@ -32,13 +32,15 @@ async def real_start(message: Message):
         await message.answer("Ты уже в деле, брат.")
         return
 
-    await save_user(message.from_user.id, {
-        "active": True,
-        "start_date": today().isoformat(),
-        "achievements": [],
-        "mood_history": []
-    })
+    # заполняем поля пользователя
+    user.active = True
+    user.start_date = today()
+    user.achievements = []
+    user.mood_history = []
+
+    await save_user(user)
     await schedule_jobs(message.from_user.id, message.bot)
+
     await message.answer(
         "Поехали. День 1 начался.\n\nДержись, я рядом ✊",
         reply_markup=main_keyboard()
