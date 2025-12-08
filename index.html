@@ -81,7 +81,7 @@
       border-radius: 4px;
     }
     
-    /* КНОПКА ВЫХОДА */
+    /* КНОПКА ВЫХОДА - СКРЫВАЕМ ПО УМОЛЧАНИЮ */
     .exit-btn {
       position: absolute;
       bottom: 30px;
@@ -98,6 +98,14 @@
       backdrop-filter: blur(5px);
       -webkit-appearance: none;
       border: none;
+      display: none; /* Скрываем по умолчанию */
+    }
+    
+    /* КНОПКА ВЫХОДА НА ЭКРАНЕ YOU DIED */
+    .exit-btn.died-btn {
+      display: block; /* Показываем только на экране смерти */
+      z-index: 1001; /* Поверх YOU DIED */
+      bottom: 40px;
     }
     
     /* ВЫЛЕТАЮЩИЕ СЛОВА */
@@ -107,33 +115,31 @@
       z-index: 5;
       opacity: 0;
       font-weight: 900;
-      animation: particleFloat 1.5s ease-out forwards;
+      animation: particleFloat 1.4s ease-out forwards;
     }
     
     .rage-word {
-      font-size: 34px;
       font-family: 'Arial Black', Impact, sans-serif;
       letter-spacing: 1px;
-      text-shadow: 0 0 12px currentColor, 0 0 24px rgba(255, 255, 255, 0.2);
+      text-shadow: 0 0 12px currentColor;
     }
     
     .rage-emoji {
-      font-size: 44px;
-      text-shadow: 0 0 15px currentColor, 0 0 30px rgba(255, 255, 255, 0.3);
+      text-shadow: 0 0 15px currentColor;
     }
     
     @keyframes particleFloat {
       0% {
         opacity: 1;
-        transform: translate(0, 0) scale(0.8) rotate(0deg);
+        transform: translate(0, 0) scale(var(--scale)) rotate(0deg);
       }
       40% {
         opacity: 1;
-        transform: translate(var(--dx), var(--dy)) scale(1.6) rotate(var(--rot));
+        transform: translate(var(--dx), var(--dy)) scale(calc(var(--scale) * 1.3)) rotate(var(--rot));
       }
       100% {
         opacity: 0;
-        transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) * 1.3)) scale(0.3) rotate(calc(var(--rot) * 1.5));
+        transform: translate(calc(var(--dx) * 1.2), calc(var(--dy) * 1.2)) scale(calc(var(--scale) * 0.3)) rotate(calc(var(--rot) * 1.5));
       }
     }
     
@@ -148,15 +154,15 @@
       opacity: 0;
       pointer-events: none;
       z-index: 2;
-      animation: quickFlash 0.3s ease-out;
+      animation: quickFlash 0.2s ease-out;
     }
     
     @keyframes quickFlash {
-      0% { opacity: 0.7; }
+      0% { opacity: 0.6; }
       100% { opacity: 0; }
     }
     
-    /* YOU DIED ЭКРАН - ТЕПЕРЬ ВМЕЩАЕТСЯ НА ЛЮБОМ ЭКРАНЕ */
+    /* YOU DIED ЭКРАН */
     .you-died-overlay {
       position: fixed;
       top: 0;
@@ -168,11 +174,12 @@
       z-index: 1000;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
     }
     
     .you-died-text {
       font-family: 'Times New Roman', serif;
-      font-size: 14vw; /* Адаптивный размер относительно ширины экрана */
+      font-size: 14vw;
       color: #8B0000;
       text-shadow: 
         0 0 10px #8B0000,
@@ -183,16 +190,15 @@
       opacity: 0;
       animation: darkSoulsAppear 3s ease-out forwards;
       text-transform: uppercase;
-      letter-spacing: 2vw; /* Адаптивный межбуквенный интервал */
+      letter-spacing: 2vw;
       line-height: 1;
       text-align: center;
       white-space: nowrap;
-      padding: 0 5vw; /* Отступы относительно ширины экрана */
+      padding: 0 5vw;
       max-width: 100%;
-      overflow: hidden;
     }
     
-    /* На очень маленьких экранах делаем еще меньше */
+    /* На очень маленьких экранах */
     @media (max-width: 400px) {
       .you-died-text {
         font-size: 56px;
@@ -200,7 +206,7 @@
       }
     }
     
-    /* На больших экранах ограничиваем максимальный размер */
+    /* На больших экранах */
     @media (min-width: 800px) {
       .you-died-text {
         font-size: 112px;
@@ -252,30 +258,6 @@
       70% { opacity: 0.2; }
       100% { opacity: 0; }
     }
-    
-    /* ПУЛЬСАЦИЯ ПРИ ТАПЕ */
-    .tap-pulse {
-      position: absolute;
-      border: 2px solid;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      z-index: 3;
-      animation: pulseEffect 0.8s ease-out forwards;
-    }
-    
-    @keyframes pulseEffect {
-      0% {
-        width: 30px;
-        height: 30px;
-        opacity: 0.7;
-      }
-      100% {
-        width: 150px;
-        height: 150px;
-        opacity: 0;
-      }
-    }
   </style>
 </head>
 <body>
@@ -317,6 +299,7 @@
     let youDiedShown = false;
     let decayTimer = null;
     let gameActive = true;
+    let particleCooldown = false;
     
     // Уровни ярости
     const LEVELS = [
@@ -331,8 +314,8 @@
     // Слова и эмодзи
     const WORDS = [
       "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙНЯ!", 
-      "ЁБАНЫЙ!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ПОШЛО НАХУЙ!", "ЁПТА!", 
-      "БЛЯДЬ!", "ХУЁВО!", "ЕБЁНЫЙ!", "ПИЗДЕЦ!", "ВЪЕБАТЬ!", "ПРОЕБАТЬ!"
+      "ТВАРЬ!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ПОШЛО НАХУЙ!", "ЁПТА!", 
+      "БЛЯДЬ!", "ХУЁВО!", "МРАЗЬ!", "ПИЗДЕЦ!", "ЗАЛУПА!", "СОСИ ХУЙ"
     ];
     const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️", "💣", "🧨"];
     
@@ -341,6 +324,7 @@
     const rageLevelEl = document.getElementById('rageLevel');
     const progressBar = document.getElementById('progressBar');
     const youDiedOverlay = document.getElementById('youDiedOverlay');
+    const exitBtn = document.querySelector('.exit-btn');
     
     // =================== ЗВУК ===================
     function initSoundOnFirstTap() {
@@ -412,34 +396,68 @@
     }
     
     function createParticle(x, y, isEmoji) {
+      if (particleCooldown) return;
+      particleCooldown = true;
+      
       const particle = document.createElement('div');
       particle.className = `rage-particle ${isEmoji ? 'rage-emoji' : 'rage-word'}`;
       particle.textContent = isEmoji 
         ? EMOJIS[Math.floor(Math.random() * EMOJIS.length)]
         : WORDS[Math.floor(Math.random() * WORDS.length)];
       
-      // Угол и дистанция
+      // РАЗМЕР и ДАЛЬНОСТЬ зависят от уровня ярости
+      const intensity = rage / 100; // от 0 до 1
+      
+      // Размер увеличивается с яростью
+      const baseSize = isEmoji ? 44 : 34;
+      const sizeMultiplier = 1 + (intensity * 0.8); // от 1x до 1.8x
+      const fontSize = Math.floor(baseSize * sizeMultiplier);
+      
+      if (isEmoji) {
+        particle.style.fontSize = `${fontSize}px`;
+      } else {
+        particle.style.fontSize = `${fontSize}px`;
+      }
+      
+      // Дальность разлета увеличивается с яростью
+      const baseDistance = 70;
+      const distanceMultiplier = 1 + (intensity * 1.2); // от 1x до 2.2x
+      
       const angle = Math.random() * Math.PI * 2;
-      const distance = 70 + Math.random() * 100 * (rage / 100);
+      const distance = baseDistance * distanceMultiplier;
+      
       particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
       particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-      particle.style.setProperty('--rot', `${Math.random() * 40 - 20}deg`);
+      particle.style.setProperty('--rot', `${Math.random() * 30 - 15}deg`);
+      particle.style.setProperty('--scale', sizeMultiplier);
       
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
       
-      // Цвет в зависимости от уровня ярости
+      // Цвет и тень усиливаются с яростью
       const level = getCurrentLevel();
       particle.style.color = level.color;
       
+      const shadowIntensity = 12 + (intensity * 20); // от 12px до 32px
+      if (isEmoji) {
+        particle.style.textShadow = `0 0 ${shadowIntensity}px ${level.color}`;
+      } else {
+        particle.style.textShadow = `0 0 ${shadowIntensity}px ${level.color}`;
+      }
+      
       document.body.appendChild(particle);
       
-      // Автоудаление через время
+      // Автоудаление
       setTimeout(() => {
         if (particle.parentNode) {
           particle.remove();
         }
-      }, 1500);
+      }, 1400);
+      
+      // Кулдаун на создание следующей частицы
+      setTimeout(() => {
+        particleCooldown = false;
+      }, 150);
     }
     
     function createFlash() {
@@ -447,23 +465,13 @@
       flash.className = 'screen-flash';
       
       const level = getCurrentLevel();
-      flash.style.background = `rgba(${parseInt(level.color.slice(1,3), 16)}, ${parseInt(level.color.slice(3,5), 16)}, ${parseInt(level.color.slice(5,7), 16)}, 0.25)`;
+      const intensity = rage / 100;
+      const opacity = 0.15 + (intensity * 0.2); // от 0.15 до 0.35
+      
+      flash.style.background = `rgba(${parseInt(level.color.slice(1,3), 16)}, ${parseInt(level.color.slice(3,5), 16)}, ${parseInt(level.color.slice(5,7), 16)}, ${opacity})`;
       
       document.body.appendChild(flash);
-      setTimeout(() => flash.remove(), 300);
-    }
-    
-    function createPulse(x, y) {
-      const pulse = document.createElement('div');
-      pulse.className = 'tap-pulse';
-      pulse.style.left = `${x}px`;
-      pulse.style.top = `${y}px`;
-      
-      const level = getCurrentLevel();
-      pulse.style.borderColor = level.color;
-      
-      document.body.appendChild(pulse);
-      setTimeout(() => pulse.remove(), 800);
+      setTimeout(() => flash.remove(), 200);
     }
     
     function createCriticalFlash() {
@@ -487,28 +495,31 @@
       // Звук YOU DIED
       playYouDiedSound();
       
-      // Сильная вибрация
+      // Вибрация
       if (navigator.vibrate) {
         navigator.vibrate([400, 200, 400]);
       }
       
-      // Показываем YOU DIED
+      // Показываем YOU DIED и кнопку
       setTimeout(() => {
         youDiedOverlay.style.display = 'flex';
         
         // Прячем интерфейс игры
         rageLevelEl.style.display = 'none';
         progressBar.parentElement.style.display = 'none';
+        
+        // Показываем кнопку закрыть
+        exitBtn.style.display = 'block';
+        exitBtn.classList.add('died-btn');
       }, 600);
     }
     
-    // СБРОС ЯРОСТИ - ДЕЛАЕМ БЫСТРЕЕ СПАД
+    // СБРОС ЯРОСТИ
     function startDecay() {
       if (decayTimer) clearTimeout(decayTimer);
       
       decayTimer = setTimeout(() => {
         if (rage > 0) {
-          // УВЕЛИЧИВАЕМ СКОРОСТЬ СПАДА
           const decayRate = 3 + (rage / 20);
           rage = Math.max(rage - decayRate, 0);
           
@@ -540,22 +551,22 @@
       const timeDiff = now - lastTapTime;
       lastTapTime = now;
       
-      // СИЛЬНО УМЕНЬШАЕМ РОСТ ЯРОСТИ!
+      // МЕДЛЕННЫЙ РОСТ
       let rageGain = 0;
       
-      if (timeDiff < 100) {        // ОЧЕНЬ БЫСТРО (<100ms)
+      if (timeDiff < 100) {        // ОЧЕНЬ БЫСТРО
         rageGain = 6;
-      } else if (timeDiff < 200) { // БЫСТРО (100-200ms)
+      } else if (timeDiff < 200) { // БЫСТРО
         rageGain = 5;
-      } else if (timeDiff < 350) { // СРЕДНЕ (200-350ms)
+      } else if (timeDiff < 350) { // СРЕДНЕ
         rageGain = 4;
-      } else if (timeDiff < 500) { // МЕДЛЕННО (350-500ms)
+      } else if (timeDiff < 500) { // МЕДЛЕННО
         rageGain = 3;
-      } else {                     // ОЧЕНЬ МЕДЛЕННО (>500ms)
+      } else {                     // ОЧЕНЬ МЕДЛЕННО
         rageGain = 2;
       }
       
-      // ШТРАФ ЗА ВЫСОКИЙ УРОВЕНЬ - сложнее расти дальше
+      // Штраф за высокий уровень
       const levelPenalty = Math.max(0, Math.floor(rage / 30));
       rageGain = Math.max(rageGain - levelPenalty, 1);
       
@@ -564,39 +575,26 @@
       // ЗВУК (чаще на высоких уровнях)
       playDamageSound();
       
-      // ВСПЫШКА (чаще на высоких уровнях)
-      if (Math.random() > 0.5 || rage > 50) {
+      // ВСПЫШКА (не всегда, чтобы не лагало)
+      if (Math.random() > 0.6) {
         createFlash();
       }
       
-      // ПУЛЬСАЦИЯ
-      createPulse(x, y);
+      // ВСЕГО 1 ЧАСТИЦА ЗА ТАП, НО ОНА СИЛЬНЕЕ С РОСТОМ ЯРОСТИ
+      // Чередуем слова и эмодзи
+      const shouldCreate = Math.random() > 0.3; // 70% шанс создать частицу
       
-      // ВЫЛЕТАЮЩИЕ ЭЛЕМЕНТЫ
-      // На высоких уровнях больше частиц
-      const baseParticles = rage > 70 ? 3 : (rage > 40 ? 2 : 1);
-      const speedMultiplier = timeDiff < 200 ? 2 : (timeDiff < 400 ? 1.5 : 1);
-      const particleCount = Math.floor(baseParticles * speedMultiplier);
-      
-      for (let i = 0; i < particleCount; i++) {
-        setTimeout(() => {
-          const offsetX = (Math.random() * 80 - 40);
-          const offsetY = (Math.random() * 80 - 40);
-          
-          if (Math.random() > 0.5) {
-            createParticle(x + offsetX, y + offsetY, false); // Слово
-          } else {
-            createParticle(x + offsetX, y + offsetY, true); // Эмодзи
-          }
-        }, i * 40);
+      if (shouldCreate) {
+        const isEmoji = Math.random() > 0.5;
+        createParticle(x, y, isEmoji);
       }
       
-      // ВИБРАЦИЯ
+      // ВИБРАЦИЯ (только на быстрых тапах или высоких уровнях)
       if (navigator.vibrate) {
         const intensity = rage / 100;
-        const duration = Math.floor(10 + intensity * 30);
+        const duration = Math.floor(10 + intensity * 25);
         
-        if (timeDiff < 250 || rage > 60) {
+        if (timeDiff < 200 || rage > 50) {
           navigator.vibrate(duration);
         }
       }
