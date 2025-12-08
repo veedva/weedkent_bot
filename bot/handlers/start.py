@@ -4,18 +4,35 @@ from aiogram.filters import Command
 from bot.keyboards import main_keyboard, start_keyboard
 from bot.utils.user import get_user, save_user, schedule_jobs
 from bot.utils.time import today
-from bot.utils.user import calculate_streak, streak_text  # добавили сюда
 
 router = Router()
+
+def calculate_streak(user) -> int:
+    if not user.start_date:
+        return 0
+    delta = today() - user.start_date
+    return max(delta.days + 1, 0)  # День 1 считается первым днём
+
+def streak_text(days: int) -> str:
+    if days == 0:
+        return "0 дней"
+    if 11 <= days % 100 <= 19:
+        return f"{days} дней"
+    if days % 10 == 1:
+        return f"{days} день"
+    if days % 10 in (2, 3, 4):
+        return f"{days} дня"
+    return f"{days} дней"
 
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     user = await get_user(message.from_user.id)
+    
     if user.active:
-        days = calculate_streak(user.start_date)
-        text = streak_text(days)
+        streak = calculate_streak(user)
+        text = streak_text(streak)
         await message.answer(
-            f"С возвращением, брат. Ты держишься {days} {text}.\nЯ рядом.",
+            f"С возвращением, брат. Ты держишься {streak} {text}.\nЯ рядом.",
             reply_markup=main_keyboard()
         )
     else:
@@ -31,17 +48,18 @@ async def cmd_start(message: Message):
 @router.message(F.text == "▶ Начать")
 async def real_start(message: Message):
     user = await get_user(message.from_user.id)
+    
     if user.active:
         await message.answer("Ты уже в деле, брат.")
         return
 
-    # Обновляем поля пользователя через объект User
+    # активируем пользователя
     user.active = True
-    user.start_date = today().isoformat()
+    user.start_date = today()
     user.achievements = []
     user.mood_history = []
 
-    await save_user(user)  # передаём сам объект User
+    await save_user(user)
     await schedule_jobs(message.from_user.id, message.bot)
 
     await message.answer(
