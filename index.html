@@ -6,7 +6,6 @@
   <title>🤬 БЕСКОНЕЧНЫЙ КАТАРСИС</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    /* ЖЁСТКИЙ СБРОС */
     * {
       margin: 0;
       padding: 0;
@@ -33,7 +32,7 @@
       width: 100vw;
     }
     
-    /* ЭКРАН ДЛЯ ТАПОВ - НЕ BUTTON! */
+    /* ЭКРАН ДЛЯ ТАПОВ */
     .tap-area {
       position: absolute;
       top: 0;
@@ -42,7 +41,6 @@
       height: 100%;
       background: transparent;
       z-index: 1;
-      /* Убираем ВСЕ стили кнопки */
       border: none !important;
       padding: 0 !important;
       margin: 0 !important;
@@ -119,7 +117,7 @@
       border: none;
     }
     
-    /* ВЫЛЕТАЮЩИЕ ЭЛЕМЕНТЫ - ОПТИМИЗИРОВАННЫЕ */
+    /* ВЫЛЕТАЮЩИЕ ЭЛЕМЕНТЫ */
     .rage-particle {
       position: absolute;
       pointer-events: none;
@@ -154,7 +152,7 @@
       }
     }
     
-    /* ВСПЫШКА - ОДНА НА ЭКРАН */
+    /* ВСПЫШКА */
     .screen-flash {
       position: absolute;
       top: 0;
@@ -210,8 +208,11 @@
   
   <button class="exit-btn" onclick="Telegram.WebApp.close()">✖ ВЫЙТИ</button>
 
+  <!-- СКРЫТЫЙ АУДИО ЭЛЕМЕНТ -->
+  <audio id="damageSound" preload="auto" style="display: none;"></audio>
+
   <script>
-    // Telegram WebApp
+    // =================== ТЕЛЕГРАМ ===================
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
     
@@ -220,11 +221,14 @@
       Telegram.WebApp.BackButton.onClick(() => Telegram.WebApp.close());
     }
     
-    // Простые данные
+    // =================== ДАННЫЕ ===================
     let rage = 0; // 0-100
     let lastTapTime = 0;
     let activeParticles = 0;
-    const MAX_PARTICLES = 15; // Лимит чтобы не лагало
+    const MAX_PARTICLES = 15;
+    let soundEnabled = true;
+    let soundCooldown = false;
+    let audioContextAllowed = false;
     
     // Уровни ярости
     const LEVELS = [
@@ -240,12 +244,46 @@
     const WORDS = ["ПИЗДА", "СУКА", "ЕБАТЬ", "НАХУЙ", "БЛЯТЬ", "ХУЙНЯ"];
     const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡"];
     
-    // Элементы DOM
+    // =================== DOM ===================
     const tapArea = document.getElementById('tapArea');
     const rageLevelEl = document.getElementById('rageLevel');
     const progressBar = document.getElementById('progressBar');
+    const damageSound = document.getElementById('damageSound');
     
-    // Функции
+    // =================== ЗВУК ===================
+    // ЗАГРУЗКА ТВОЕГО ФАЙЛА
+    damageSound.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
+    
+    // Функция проигрывания звука
+    function playDamageSound() {
+      // 25% шанс проиграть звук
+      if (!soundEnabled || soundCooldown || Math.random() > 0.25) return;
+      
+      try {
+        // Перематываем на начало
+        damageSound.currentTime = 0;
+        
+        // Пытаемся воспроизвести
+        const playPromise = damageSound.play();
+        
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log("Автовоспроизведение заблокировано:", error);
+            soundEnabled = false;
+          });
+        }
+        
+        // Кулдаун на звук (чтобы не накладывался)
+        soundCooldown = true;
+        setTimeout(() => { soundCooldown = false; }, 400);
+        
+      } catch (error) {
+        console.log("Ошибка звука:", error);
+        soundEnabled = false;
+      }
+    }
+    
+    // =================== ФУНКЦИИ ===================
     function getCurrentLevel() {
       const index = Math.floor(rage / 20);
       return LEVELS[Math.min(index, LEVELS.length - 1)];
@@ -322,12 +360,15 @@
       
       // Увеличиваем ярость
       if (timeDiff < 300) {
-        rage = Math.min(rage + 8, 100); // Быстрые тапы
+        rage = Math.min(rage + 8, 100);
       } else if (timeDiff < 1000) {
-        rage = Math.min(rage + 5, 100); // Средние тапы
+        rage = Math.min(rage + 5, 100);
       } else {
-        rage = Math.min(rage + 3, 100); // Медленные тапы
+        rage = Math.min(rage + 3, 100);
       }
+      
+      // ЗВУК МАЙНКРАФТА (25% шанс)
+      playDamageSound();
       
       // Эффекты
       createFlash();
@@ -369,7 +410,7 @@
       }
     }
     
-    // Обработчики событий
+    // =================== ОБРАБОТЧИКИ ===================
     tapArea.addEventListener('click', function(e) {
       handleTap(e.clientX, e.clientY);
     });
@@ -380,23 +421,17 @@
       handleTap(touch.clientX, touch.clientY);
     }, { passive: false });
     
+    // =================== ИНИЦИАЛИЗАЦИЯ ===================
+    // Разрешаем AudioContext при первом тапе
+    tapArea.addEventListener('touchstart', function initAudio() {
+      audioContextAllowed = true;
+      tapArea.removeEventListener('touchstart', initAudio);
+    }, { once: true });
+    
     // Таймеры
     setInterval(decayRage, 500);
     
-    // Инициализация
     updateUI();
-    
-    // Авто-демо (можно удалить)
-    // let demo = false;
-    // if (demo) {
-    //   setInterval(() => {
-    //     if (Math.random() > 0.5) {
-    //       const x = 50 + Math.random() * (window.innerWidth - 100);
-    //       const y = 150 + Math.random() * (window.innerHeight - 300);
-    //       handleTap(x, y);
-    //     }
-    //   }, 200);
-    // }
   </script>
 </body>
 </html>
