@@ -313,8 +313,8 @@
     let isProcessingTap = false;
     let tapTimeout = null;
     
-    const WORDS = ["ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙ!", "ПИЗДЕЦ!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ЁБАНЫЙ!"];
-    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "☠️", "💣", "🧨"];
+    const WORDS = ["ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙ!", "ПИЗДА!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ЖОПА!"];
+    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "☠️"];
     
     const PROGRESS_COLORS = [
       '#4dabf7', '#38bdf8', '#22d3ee', '#fbbf24', '#f97316', '#ef4444', '#dc2626', '#991b1b'
@@ -524,51 +524,65 @@
       
       decayInterval = setInterval(() => {
         if (rage > 0 && gameActive) {
-          rage = Math.max(0, rage - 0.3);
+          rage = Math.max(0, rage - 0.7);
           updateUI();
         }
       }, 100);
     }
     
     function handleTapEvent(e) {
-  if (e.type === 'touchstart') e.preventDefault();
-  
-  if (!gameActive || isProcessingTap) return;
-  
-  isProcessingTap = true;
-  clearTimeout(tapTimeout);
-  tapTimeout = setTimeout(() => { isProcessingTap = false; }, 100);
-  
-  let clientX, clientY;
-  if (e.type === 'touchstart') {
-    clientX = e.touches[0].clientX;
-    clientY = e.touches[0].clientY;
-  } else {
-    clientX = e.clientX;
-    clientY = e.clientY;
-  }
-  
-  if (!soundInitialized) initSound();
-  
-  // Увеличиваем ярость
-  rage = Math.min(rage + 5, 100);
-  
-  // ГАРАНТИЯ: если близко к 100% - ставим 100%
-  if (rage > 99.5) {
-    rage = 100;
-  }
-  
-  // Проверяем смерть
-  if (rage >= 100 && !youDiedShown) {
-    showDeathScreen();
-    isProcessingTap = false;
-    return;
-  }
-  
-  playDamageSound();
-  createEffects(clientX, clientY);
-  updateUI();
-}
+      if (e.type === 'touchstart') e.preventDefault();
+      
+      if (!gameActive || isProcessingTap) return;
+      
+      isProcessingTap = true;
+      clearTimeout(tapTimeout);
+      tapTimeout = setTimeout(() => { isProcessingTap = false; }, 100);
+      
+      let clientX, clientY;
+      if (e.type === 'touchstart') {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      
+      if (!soundInitialized) initSound();
+      
+      // Увеличиваем ярость
+      rage = Math.min(rage + 5, 100);
+      
+      // ГАРАНТИЯ: если близко к 100% - ставим 100%
+      if (rage > 99.5) {
+        rage = 100;
+      }
+      
+      // Проверяем смерть
+      if (rage >= 100 && !youDiedShown) {
+        showDeathScreen();
+        isProcessingTap = false;
+        return;
+      }
+      
+      playDamageSound();
+      createEffects(clientX, clientY);
+      updateUI();
+    }
+    
+    tapArea.addEventListener('touchstart', handleTapEvent, { passive: false });
+    tapArea.addEventListener('click', handleTapEvent);
+    
+    updateUI();
+    startDecay();
+    
+    setInterval(() => {
+      const particles = particlesContainer.querySelectorAll('.rage-particle');
+      if (particles.length > 25) {
+        const toRemove = particles.length - 20;
+        for (let i = 0; i < toRemove; i++) {
+          if (particles[i]) particles[i].remove();
+        }
       }
     }, 3000);
   </script>
