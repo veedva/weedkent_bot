@@ -3,12 +3,15 @@
   "build": {
     "builder": "nixpacks"
   },
-  "start": "python bot/main.py",
+  "start": "python -m bot.main",
   "services": [
-    { "name": "postgres", "type": "postgres" },
-    { "name": "redis", "type": "redis" }
-  ],
-  "deploy": {
-    "startCommand": "gunicorn -k uvicorn.workers.UvicornWorker bot.web:app & python bot/main.py"
-  }
+    {
+      "name": "Postgres",
+      "type": "postgres"
+    },
+    {
+      "name": "Redis",
+      "type": "redis"
+    }
+  ]
 }
