@@ -6,6 +6,9 @@
   <title>🤬 БЕСКОНЕЧНЫЙ КАТАРСИС</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    /* Импортируем шрифт Dark Souls */
+    @import url('https://fonts.cdnfonts.com/css/optimustime');
+    
     * {
       margin: 0;
       padding: 0;
@@ -64,9 +67,9 @@
       bottom: 90px;
       left: 30px;
       right: 30px;
-      height: 6px;
+      height: 8px;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
+      border-radius: 4px;
       overflow: hidden;
       z-index: 10;
       pointer-events: none;
@@ -76,8 +79,8 @@
       height: 100%;
       background: linear-gradient(90deg, #ff4757, #ffcc00);
       width: 0%;
-      transition: width 0.3s ease;
-      border-radius: 3px;
+      transition: width 0.1s linear;
+      border-radius: 4px;
     }
     
     /* КНОПКА ВЫХОДА */
@@ -99,38 +102,42 @@
       border: none;
     }
     
-    /* ВЫЛЕТАЮЩИЕ ЭЛЕМЕНТЫ */
+    /* ВЫЛЕТАЮЩИЕ СЛОВА */
     .rage-particle {
       position: absolute;
       pointer-events: none;
       z-index: 5;
       opacity: 0;
       font-weight: 900;
-      animation: particleFloat 2.5s ease-out forwards;
-      text-shadow: 0 0 10px currentColor;
+      animation: particleFloat 2.2s ease-out forwards;
+      text-shadow: 0 0 15px currentColor, 0 0 30px rgba(255, 255, 255, 0.3);
     }
     
     .rage-word {
-      font-size: 36px;
+      font-size: 38px;
       font-family: 'Arial Black', Impact, sans-serif;
+      letter-spacing: 1px;
     }
     
     .rage-emoji {
-      font-size: 52px;
+      font-size: 48px;
     }
     
     @keyframes particleFloat {
       0% {
         opacity: 1;
-        transform: translate(0, 0) scale(0.9) rotate(0deg);
+        transform: translate(0, 0) scale(0.8) rotate(0deg);
       }
-      30% {
+      25% {
         opacity: 1;
         transform: translate(var(--dx), var(--dy)) scale(1.8) rotate(var(--rot));
       }
+      50% {
+        opacity: 0.9;
+      }
       100% {
         opacity: 0;
-        transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) * 1.3)) scale(0.4) rotate(calc(var(--rot) * 1.5));
+        transform: translate(calc(var(--dx) * 1.5), calc(var(--dy) * 1.5)) scale(0.4) rotate(calc(var(--rot) * 2));
       }
     }
     
@@ -141,7 +148,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 71, 87, 0.2);
+      background: rgba(255, 71, 87, 0.25);
       opacity: 0;
       pointer-events: none;
       z-index: 2;
@@ -149,32 +156,102 @@
     }
     
     @keyframes quickFlash {
-      0% { opacity: 0.6; }
+      0% { opacity: 0.7; }
       100% { opacity: 0; }
     }
     
-    /* ПУЛЬСАЦИЯ ВОКРУГ ТАПА */
-    .tap-ripple {
-      position: absolute;
-      border-radius: 50%;
-      border: 3px solid rgba(255, 71, 87, 0.6);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 3;
-      animation: rippleEffect 0.8s ease-out;
+    /* YOU DIED ЭКРАН - Dark Souls стиль */
+    .you-died {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
     }
     
-    @keyframes rippleEffect {
-      0% {
-        opacity: 0.8;
-        transform: scale(0.3);
-        border-width: 8px;
+    .you-died-text {
+      font-family: 'OptimusTime', 'Times New Roman', serif;
+      font-size: 82px;
+      color: #8B0000;
+      text-shadow: 
+        0 0 20px #8B0000,
+        0 0 40px #8B0000,
+        0 0 60px #8B0000,
+        2px 2px 0 #000,
+        4px 4px 0 rgba(0, 0, 0, 0.8);
+      margin-bottom: 20px;
+      animation: darkSoulsAppear 2.5s ease-out forwards;
+      text-transform: uppercase;
+      letter-spacing: 10px;
+      opacity: 0;
+    }
+    
+    .you-died-subtext {
+      font-family: 'OptimusTime', 'Times New Roman', serif;
+      font-size: 28px;
+      color: #D4AF37;
+      text-align: center;
+      max-width: 80%;
+      opacity: 0;
+      animation: subtitleAppear 2.5s ease-out forwards;
+      animation-delay: 0.5s;
+      text-shadow: 2px 2px 0 #000;
+    }
+    
+    @keyframes darkSoulsAppear {
+      0% { 
+        opacity: 0;
+        transform: scale(0.5) translateY(-50px);
+        filter: blur(10px);
+      }
+      20% {
+        opacity: 1;
+        transform: scale(1.1) translateY(0);
+        filter: blur(0);
+      }
+      30% {
+        transform: scale(1);
+      }
+      80% {
+        opacity: 1;
+        transform: scale(1);
       }
       100% {
-        opacity: 0;
-        transform: scale(2);
-        border-width: 1px;
+        opacity: 1;
+        transform: scale(1);
       }
+    }
+    
+    @keyframes subtitleAppear {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* КРИТИЧЕСКАЯ ВСПЫШКА */
+    .critical-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #8B0000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 900;
+      animation: criticalFlash 1.2s ease-out;
+    }
+    
+    @keyframes criticalFlash {
+      0% { opacity: 0.9; }
+      30% { opacity: 0.7; }
+      70% { opacity: 0.3; }
+      100% { opacity: 0; }
     }
   </style>
 </head>
@@ -188,6 +265,12 @@
   </div>
   
   <button class="exit-btn" onclick="Telegram.WebApp.close()">✖ ВЫЙТИ</button>
+  
+  <!-- YOU DIED ЭКРАН Dark Souls стиль -->
+  <div class="you-died" id="youDied">
+    <div class="you-died-text">YOU DIED</div>
+    <div class="you-died-subtext">Твоя ярость достигла апокалиптического уровня</div>
+  </div>
 
   <script>
     // =================== ТЕЛЕГРАМ ===================
@@ -203,78 +286,101 @@
     let rage = 0;
     let lastTapTime = 0;
     let activeParticles = 0;
-    const MAX_PARTICLES = 15;
+    const MAX_PARTICLES = 12;
     let soundEnabled = false;
     let soundInitialized = false;
     let soundCooldown = false;
     let audioElements = [];
+    let youDiedSound = null;
     let currentAudioIndex = 0;
     let firstTapDone = false;
+    let youDiedShown = false;
+    let decayTimer = null;
     
-    // Уровни ярости
+    // Уровни ярости - ПРОЩЕ!
     const LEVELS = [
-      { emoji: "😐", name: "СПОКОЙНО", color: "#4dabf7" },
-      { emoji: "😠", name: "НАПРЯЖЕНИЕ", color: "#ffa94d" },
-      { emoji: "😡", name: "ЗЛОСТЬ", color: "#ff6b6b" },
-      { emoji: "🤬", name: "ЯРОСТЬ", color: "#ff4757" },
-      { emoji: "💥", name: "БЕШЕНСТВО", color: "#ffcc00" },
-      { emoji: "🔥", name: "ИСТЕРИКА", color: "#ff3838" }
+      { emoji: "😐", name: "СПОКОЙНО", color: "#4dabf7", soundChance: 0.1 },
+      { emoji: "😠", name: "НАПРЯЖЕНИЕ", color: "#ffa94d", soundChance: 0.15 },
+      { emoji: "😡", name: "ЗЛОСТЬ", color: "#ff6b6b", soundChance: 0.2 },
+      { emoji: "🤬", name: "ЯРОСТЬ", color: "#ff4757", soundChance: 0.25 },
+      { emoji: "💥", name: "БЕШЕНСТВО", color: "#ffcc00", soundChance: 0.3 },
+      { emoji: "🔥", name: "ИСТЕРИКА", color: "#ff3838", soundChance: 0.35 }
     ];
     
     // Слова и эмодзи
-    const WORDS = ["ПИЗДА", "СУКА", "ЕБАТЬ", "НАХУЙ", "БЛЯТЬ", "ХУЙНЯ"];
-    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡"];
+    const WORDS = [
+      "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙНЯ!", 
+      "ЁБАНЫЙ!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ПОШЛО НАХУЙ!", "ЁПТА!", 
+      "БЛЯДЬ!", "ХУЁВО!", "ЕБЁНЫЙ!", "ПИЗДЕЦ!", "ВЪЕБАТЬ!", "ПРОЕБАТЬ!"
+    ];
+    const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️", "💣", "🧨"];
     
     // =================== DOM ===================
     const tapArea = document.getElementById('tapArea');
     const rageLevelEl = document.getElementById('rageLevel');
     const progressBar = document.getElementById('progressBar');
+    const youDiedScreen = document.getElementById('youDied');
     
     // =================== ЗВУК ===================
-    // Инициализация звука при первом тапе
     function initSoundOnFirstTap() {
       if (soundInitialized) return;
       
-      // Создаём аудио элементы
-      for (let i = 0; i < 3; i++) {
+      // Звуки ударов
+      for (let i = 0; i < 2; i++) {
         const audio = new Audio();
         audio.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
         audio.preload = "auto";
-        audio.volume = 0.7;
+        audio.volume = 0.5;
         audioElements.push(audio);
       }
+      
+      // Звук YOU DIED
+      youDiedSound = new Audio();
+      youDiedSound.src = "https://veedva.github.io/weedkent_bot/dark-souls-you-died.mp3";
+      youDiedSound.preload = "auto";
+      youDiedSound.volume = 0.7;
       
       soundInitialized = true;
       soundEnabled = true;
       
-      // Пробуем проиграть тихий тестовый звук
-      try {
-        const testAudio = new Audio();
-        testAudio.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
-        testAudio.volume = 0.1;
-        testAudio.play().catch(() => {});
-      } catch (e) {
-        // Игнорируем ошибки
-      }
+      // Предзагрузка звука
+      setTimeout(() => {
+        try {
+          const testAudio = new Audio();
+          testAudio.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
+          testAudio.volume = 0.03;
+          testAudio.play().catch(() => {});
+        } catch (e) {}
+      }, 100);
     }
     
-    // Проигрывание звука урона
     function playDamageSound() {
-      if (!soundEnabled || soundCooldown || Math.random() > 0.25) return;
+      if (!soundEnabled || soundCooldown) return;
+      
+      const level = getCurrentLevel();
+      if (Math.random() > level.soundChance) return;
       
       try {
         const audio = audioElements[currentAudioIndex];
         currentAudioIndex = (currentAudioIndex + 1) % audioElements.length;
         
         audio.currentTime = 0;
-        audio.volume = 0.7;
+        audio.volume = 0.4 + (rage / 250);
         audio.play().catch(() => {});
         
         soundCooldown = true;
         setTimeout(() => { soundCooldown = false; }, 400);
-      } catch (error) {
-        // Игнорируем все ошибки
-      }
+      } catch (error) {}
+    }
+    
+    function playYouDiedSound() {
+      if (!soundEnabled || !youDiedSound) return;
+      
+      try {
+        youDiedSound.currentTime = 0;
+        youDiedSound.volume = 0.7;
+        youDiedSound.play().catch(() => {});
+      } catch (error) {}
     }
     
     // =================== ОСНОВНЫЕ ФУНКЦИИ ===================
@@ -287,9 +393,9 @@
       const level = getCurrentLevel();
       rageLevelEl.textContent = `${level.emoji} ${level.name}`;
       rageLevelEl.style.color = level.color;
-      rageLevelEl.style.textShadow = `0 0 15px ${level.color}`;
+      rageLevelEl.style.textShadow = `0 0 20px ${level.color}`;
       progressBar.style.width = `${rage}%`;
-      progressBar.style.background = level.color;
+      progressBar.style.background = `linear-gradient(90deg, ${level.color}, #ffcc00)`;
     }
     
     function createParticle(x, y, isEmoji) {
@@ -304,10 +410,10 @@
         : WORDS[Math.floor(Math.random() * WORDS.length)];
       
       const angle = Math.random() * Math.PI * 2;
-      const distance = 80 + Math.random() * 120 * (rage / 100);
+      const distance = 80 + Math.random() * 140 * (rage / 100);
       particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
       particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-      particle.style.setProperty('--rot', `${Math.random() * 40 - 20}deg`);
+      particle.style.setProperty('--rot', `${Math.random() * 60 - 30}deg`);
       
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
@@ -318,64 +424,147 @@
       document.body.appendChild(particle);
       
       setTimeout(() => {
-        particle.remove();
-        activeParticles--;
-      }, 2500);
+        if (particle.parentNode) {
+          particle.remove();
+          activeParticles--;
+        }
+      }, 2200);
     }
     
     function createFlash() {
       const flash = document.createElement('div');
       flash.className = 'screen-flash';
+      
+      const level = getCurrentLevel();
+      flash.style.background = `rgba(${parseInt(level.color.slice(1,3), 16)}, ${parseInt(level.color.slice(3,5), 16)}, ${parseInt(level.color.slice(5,7), 16)}, 0.3)`;
+      
       document.body.appendChild(flash);
       setTimeout(() => flash.remove(), 300);
     }
     
-    function createRipple(x, y) {
-      const ripple = document.createElement('div');
-      ripple.className = 'tap-ripple';
-      ripple.style.left = `${x}px`;
-      ripple.style.top = `${y}px`;
-      ripple.style.width = ripple.style.height = `${50 + rage}px`;
+    function createCriticalFlash() {
+      const flash = document.createElement('div');
+      flash.className = 'critical-flash';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 1200);
+    }
+    
+    function showYouDied() {
+      if (youDiedShown) return;
+      youDiedShown = true;
       
-      const level = getCurrentLevel();
-      ripple.style.borderColor = level.color;
+      // Критическая вспышка
+      createCriticalFlash();
       
-      document.body.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 800);
+      // Звук YOU DIED
+      playYouDiedSound();
+      
+      // Вибрация
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200, 100, 400]);
+      }
+      
+      // Показываем экран через небольшую задержку
+      setTimeout(() => {
+        youDiedScreen.style.display = 'flex';
+        
+        // Автоматическое скрытие через 4 секунды
+        setTimeout(() => {
+          youDiedScreen.style.display = 'none';
+          resetGame();
+        }, 4000);
+      }, 600);
+    }
+    
+    function resetGame() {
+      rage = 0;
+      youDiedShown = false;
+      updateUI();
+    }
+    
+    // СБРОС ЯРОСТИ - МЕДЛЕННЕЕ!
+    function startDecay() {
+      if (decayTimer) clearTimeout(decayTimer);
+      
+      decayTimer = setTimeout(() => {
+        if (rage > 0) {
+          // МЕДЛЕННЫЙ СБРОС - даём время отдохнуть
+          const decayRate = 1.5 + (rage / 30); // От 1.5 до 5 единиц в секунду
+          rage = Math.max(rage - decayRate, 0);
+          updateUI();
+          
+          if (rage > 0) {
+            startDecay();
+          }
+        }
+      }, 100);
     }
     
     function handleTap(x, y) {
-      // ПЕРВЫЙ ТАП - включаем звук
       if (!firstTapDone) {
         firstTapDone = true;
         initSoundOnFirstTap();
+      }
+      
+      if (rage >= 100 && !youDiedShown) {
+        showYouDied();
+        return;
       }
       
       const now = Date.now();
       const timeDiff = now - lastTapTime;
       lastTapTime = now;
       
-      if (timeDiff < 300) {
-        rage = Math.min(rage + 8, 100);
-      } else if (timeDiff < 1000) {
-        rage = Math.min(rage + 5, 100);
-      } else {
-        rage = Math.min(rage + 3, 100);
+      // ЛЕГКИЙ РОСТ - можно достичь 100% нормальной скоростью!
+      let rageGain = 0;
+      
+      if (timeDiff < 150) { // Быстро (<150мс) - 10 очков
+        rageGain = 10;
+      } else if (timeDiff < 300) { // Средне (150-300мс) - 8 очков
+        rageGain = 8;
+      } else if (timeDiff < 500) { // Медленно (300-500мс) - 6 очков
+        rageGain = 6;
+      } else { // Очень медленно (>500мс) - 4 очка
+        rageGain = 4;
       }
       
-      // ЗВУК УРОНА
+      // БОНУС за уровень ярости - чем выше, тем легче расти дальше!
+      const levelBonus = Math.floor(rage / 20) * 2;
+      rageGain += levelBonus;
+      
+      // МИНИМАЛЬНЫЙ ГАЙН - даже при одиночных тапах прогресс есть
+      rageGain = Math.max(rageGain, 4);
+      
+      rage = Math.min(rage + rageGain, 100);
+      
+      // ЗВУК
       playDamageSound();
       
-      // ЭФФЕКТЫ
+      // ВСПЫШКА
       createFlash();
-      createRipple(x, y);
       
-      const particleCount = Math.floor(1 + (rage / 25));
+      // ПУЛЬСАЦИЯ
+      const ripple = document.createElement('div');
+      ripple.className = 'tap-ripple';
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      ripple.style.width = ripple.style.height = `${40 + rage}px`;
+      
+      const level = getCurrentLevel();
+      ripple.style.borderColor = level.color;
+      
+      document.body.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 1000);
+      
+      // ВЫЛЕТАЮЩИЕ ЭЛЕМЕНТЫ
+      const particleMultiplier = 1 + (rageGain / 5);
+      const baseParticles = Math.floor(2 * particleMultiplier);
+      const particleCount = Math.min(baseParticles, 6);
       
       for (let i = 0; i < particleCount; i++) {
         setTimeout(() => {
-          const offsetX = (Math.random() * 100 - 50);
-          const offsetY = (Math.random() * 100 - 50);
+          const offsetX = (Math.random() * 120 - 60);
+          const offsetY = (Math.random() * 120 - 60);
           
           if (Math.random() > 0.4) {
             createParticle(x + offsetX, y + offsetY, false);
@@ -383,23 +572,19 @@
           if (Math.random() > 0.5) {
             createParticle(x + offsetX, y + offsetY, true);
           }
-        }, i * 50);
+        }, i * 80);
       }
       
-      // ВИБРАЦИЯ
-      if (navigator.vibrate) {
-        const duration = Math.min(30 + rage / 2, 70);
+      // ВИБРАЦИЯ - только при высокой ярости
+      if (navigator.vibrate && rage > 40) {
+        const duration = Math.min(15 + rage / 4, 50);
         navigator.vibrate(duration);
       }
       
       updateUI();
-    }
-    
-    function decayRage() {
-      if (Date.now() - lastTapTime > 1500 && rage > 0) {
-        rage = Math.max(rage - 2, 0);
-        updateUI();
-      }
+      
+      // ЗАПУСКАЕМ СБРОС (медленный)
+      startDecay();
     }
     
     // =================== ОБРАБОТЧИКИ ===================
@@ -415,7 +600,6 @@
     
     // =================== ИНИЦИАЛИЗАЦИЯ ===================
     updateUI();
-    setInterval(decayRage, 500);
   </script>
 </body>
 </html>
