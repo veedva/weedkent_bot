@@ -81,7 +81,7 @@
       border-radius: 4px;
     }
     
-    /* КНОПКА ВЫХОДА - ВСЕГДА ВИДНА */
+    /* КНОПКА ВЫХОДА */
     .exit-btn {
       position: absolute;
       bottom: 30px;
@@ -100,14 +100,27 @@
       border: none;
     }
     
+    /* КОНТЕЙНЕР ДЛЯ ЧАСТИЦ (ВАЖНО!) */
+    .particles-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      overflow: hidden;
+      contain: strict; /* Оптимизация для браузера */
+    }
+    
     /* ВЫЛЕТАЮЩИЕ СЛОВА */
     .rage-particle {
       position: absolute;
       pointer-events: none;
-      z-index: 5;
       opacity: 0;
       font-weight: 900;
-      animation: particleFloat 1.8s ease-out forwards;
+      animation: particleFloat 1.2s ease-out forwards;
+      will-change: transform, opacity; /* Оптимизация анимации */
     }
     
     .rage-word {
@@ -127,11 +140,11 @@
       }
       40% {
         opacity: 1;
-        transform: translate(var(--dx), var(--dy)) scale(calc(var(--scale) * 1.5)) rotate(var(--rot));
+        transform: translate(var(--dx), var(--dy)) scale(calc(var(--scale) * 1.3)) rotate(var(--rot));
       }
       100% {
         opacity: 0;
-        transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) * 1.3)) scale(calc(var(--scale) * 0.4)) rotate(calc(var(--rot) * 2));
+        transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) * 1.3)) scale(calc(var(--scale) * 0.3));
       }
     }
     
@@ -146,7 +159,8 @@
       opacity: 0;
       pointer-events: none;
       z-index: 2;
-      animation: quickFlash 0.3s ease-out;
+      animation: quickFlash 0.25s ease-out;
+      will-change: opacity; /* Оптимизация */
     }
     
     @keyframes quickFlash {
@@ -164,13 +178,14 @@
       transform: translate(-50%, -50%) scale(0);
       pointer-events: none;
       z-index: 4;
-      animation: tapHitEffect 0.4s ease-out forwards;
+      animation: tapHitEffect 0.35s ease-out forwards;
+      will-change: transform, opacity; /* Оптимизация */
     }
     
     @keyframes tapHitEffect {
       0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-      70% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.5; }
-      100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+      70% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.5; }
+      100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
     }
     
     /* YOU DIED ЭКРАН */
@@ -210,7 +225,6 @@
       transform-origin: center center;
     }
     
-    /* На очень маленьких экранах */
     @media (max-width: 400px) {
       .you-died-text {
         font-size: 56px;
@@ -218,7 +232,6 @@
       }
     }
     
-    /* На больших экранах */
     @media (min-width: 800px) {
       .you-died-text {
         font-size: 112px;
@@ -226,61 +239,15 @@
       }
     }
     
-    /* ТОЧНАЯ АНИМАЦИЯ КАК В DARK SOULS */
     @keyframes darkSoulsDeath {
       0% { 
         opacity: 0;
-        transform: scale(3) translateZ(0);
+        transform: scale(3);
         filter: blur(50px) brightness(5);
-      }
-      10% {
-        opacity: 0.1;
-        transform: scale(2.8) translateZ(0);
-        filter: blur(40px) brightness(4.5);
-      }
-      20% {
-        opacity: 0.2;
-        transform: scale(2.5) translateZ(0);
-        filter: blur(35px) brightness(4);
-      }
-      30% {
-        opacity: 0.3;
-        transform: scale(2.2) translateZ(0);
-        filter: blur(30px) brightness(3.5);
-      }
-      40% {
-        opacity: 0.4;
-        transform: scale(1.9) translateZ(0);
-        filter: blur(25px) brightness(3);
-      }
-      50% {
-        opacity: 0.5;
-        transform: scale(1.6) translateZ(0);
-        filter: blur(20px) brightness(2.5);
-      }
-      60% {
-        opacity: 0.6;
-        transform: scale(1.3) translateZ(0);
-        filter: blur(15px) brightness(2);
-      }
-      70% {
-        opacity: 0.7;
-        transform: scale(1.15) translateZ(0);
-        filter: blur(10px) brightness(1.8);
-      }
-      80% {
-        opacity: 0.8;
-        transform: scale(1.07) translateZ(0);
-        filter: blur(5px) brightness(1.4);
-      }
-      90% {
-        opacity: 0.9;
-        transform: scale(1.02) translateZ(0);
-        filter: blur(2px) brightness(1.2);
       }
       100% {
         opacity: 1;
-        transform: scale(1) translateZ(0);
+        transform: scale(1);
         filter: blur(0) brightness(1);
       }
     }
@@ -296,17 +263,18 @@
       opacity: 0;
       pointer-events: none;
       z-index: 900;
-      animation: criticalFlash 1.8s ease-out;
+      animation: criticalFlash 1.5s ease-out;
+      will-change: opacity; /* Оптимизация */
     }
     
     @keyframes criticalFlash {
       0% { opacity: 0; }
-      5% { opacity: 0.9; }
-      15% { opacity: 0.8; }
-      30% { opacity: 0.6; }
-      50% { opacity: 0.4; }
-      70% { opacity: 0.2; }
-      90% { opacity: 0.1; }
+      5% { opacity: 0.8; }
+      15% { opacity: 0.7; }
+      30% { opacity: 0.5; }
+      50% { opacity: 0.3; }
+      70% { opacity: 0.15; }
+      90% { opacity: 0.05; }
       100% { opacity: 0; }
     }
     
@@ -333,6 +301,9 @@
 <body>
   <div class="rage-level" id="rageLevel">😐 СПОКОЙНО</div>
   <div class="tap-info" id="tapInfo">Тапай регулярно, поддерживай темп!</div>
+  
+  <!-- КОНТЕЙНЕР ДЛЯ ЧАСТИЦ -->
+  <div class="particles-container" id="particlesContainer"></div>
   
   <div class="tap-area" id="tapArea"></div>
   
@@ -370,9 +341,12 @@
     let youDiedShown = false;
     let decayTimer = null;
     let gameActive = true;
-    let particles = [];
-    let combo = 0;
-    let comboTimeout = null;
+    
+    // ОЧЕРЕДИ ДЛЯ ОПТИМИЗАЦИИ
+    let particleQueue = [];
+    let lastParticleTime = 0;
+    let tapCooldown = false;
+    let maxParticles = 12; // Ограничиваем количество частиц
     
     // Уровни ярости
     const LEVELS = [
@@ -386,9 +360,9 @@
     
     // Слова и эмодзи
     const WORDS = [
-      "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙНЯ!", 
-      "ЁБАНЫЙ!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ПОШЛО НАХУЙ!", "ЁПТА!", 
-      "БЛЯДЬ!", "ХУЁВО!", "ЕБЁНЫЙ!", "ПИЗДЕЦ!", "ВЪЕБАТЬ!", "ПРОЕБАТЬ!"
+      "ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙ!", 
+      "ПИЗДОС!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ПОШЛИ НАХУЙ!", "ЁПТА!", 
+      "БЛЯДЬ!", "УЁБИЩЕ!", "ТВАРЬ!", "ПИЗДЕЦ!", "ЗАЛУПА!", "МРАЗЬ!"
     ];
     const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "🌪", "☠️", "💣", "🧨"];
     
@@ -398,6 +372,21 @@
     const progressBar = document.getElementById('progressBar');
     const youDiedOverlay = document.getElementById('youDiedOverlay');
     const tapInfo = document.getElementById('tapInfo');
+    const particlesContainer = document.getElementById('particlesContainer');
+    
+    // =================== ОПТИМИЗАЦИЯ ЧАСТИЦ ===================
+    function cleanupParticles() {
+      // Автоматическая очистка старых частиц
+      const particles = particlesContainer.querySelectorAll('.rage-particle');
+      if (particles.length > maxParticles) {
+        const toRemove = particles.length - maxParticles;
+        for (let i = 0; i < toRemove; i++) {
+          if (particles[i]) {
+            particles[i].remove();
+          }
+        }
+      }
+    }
     
     // =================== ЗВУК ===================
     function initSoundOnFirstTap() {
@@ -437,7 +426,7 @@
         audio.play().catch(() => {});
         
         soundCooldown = true;
-        setTimeout(() => { soundCooldown = false; }, 200);
+        setTimeout(() => { soundCooldown = false; }, 150);
       } catch (error) {}
     }
     
@@ -449,7 +438,7 @@
           youDiedSound.currentTime = 0;
           youDiedSound.volume = 0.8;
           youDiedSound.play().catch(() => {});
-        }, 400); // Задержка как в игре
+        }, 400);
       } catch (error) {}
     }
     
@@ -474,7 +463,7 @@
       
       setTimeout(() => {
         tapInfo.classList.remove('show');
-      }, 2000);
+      }, 1500);
     }
     
     function createTapHit(x, y) {
@@ -487,32 +476,47 @@
       hit.style.background = level.color;
       
       document.body.appendChild(hit);
-      setTimeout(() => hit.remove(), 400);
+      setTimeout(() => {
+        if (hit.parentNode) hit.remove();
+      }, 350);
     }
     
     function createParticle(x, y, isEmoji) {
+      const now = Date.now();
+      
+      // Ограничение частоты создания частиц
+      if (now - lastParticleTime < 50) {
+        // Добавляем в очередь, если слишком быстро
+        particleQueue.push({ x, y, isEmoji, time: now });
+        return;
+      }
+      
+      lastParticleTime = now;
+      
       const particle = document.createElement('div');
       particle.className = `rage-particle ${isEmoji ? 'rage-emoji' : 'rage-word'}`;
       particle.textContent = isEmoji 
         ? EMOJIS[Math.floor(Math.random() * EMOJIS.length)]
         : WORDS[Math.floor(Math.random() * WORDS.length)];
       
-      const intensity = rage / 100;
+      const intensity = Math.min(rage / 100, 1);
       
-      const baseSize = isEmoji ? 40 : 30;
-      const sizeMultiplier = 0.8 + (intensity * 1.2);
+      // Более консервативные размеры
+      const baseSize = isEmoji ? 30 : 24;
+      const sizeMultiplier = 0.8 + (intensity * 0.8);
       const fontSize = Math.floor(baseSize * sizeMultiplier);
       particle.style.fontSize = `${fontSize}px`;
       
-      const baseDistance = 60;
-      const distanceMultiplier = 0.8 + (intensity * 1.5);
+      // Более короткая анимация
+      const baseDistance = 50;
+      const distanceMultiplier = 0.7 + (intensity * 1.2);
       
       const angle = Math.random() * Math.PI * 2;
       const distance = baseDistance * distanceMultiplier;
       
       particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
       particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-      particle.style.setProperty('--rot', `${Math.random() * 40 - 20}deg`);
+      particle.style.setProperty('--rot', `${Math.random() * 30 - 15}deg`);
       particle.style.setProperty('--scale', sizeMultiplier);
       
       particle.style.left = `${x}px`;
@@ -521,23 +525,22 @@
       const level = getCurrentLevel();
       particle.style.color = level.color;
       
-      document.body.appendChild(particle);
-      particles.push(particle);
+      particlesContainer.appendChild(particle);
       
+      // Автоматическое удаление
       setTimeout(() => {
-        const index = particles.indexOf(particle);
-        if (index > -1) {
-          particles.splice(index, 1);
-        }
         if (particle.parentNode) {
           particle.remove();
         }
-      }, 1800);
+      }, 1200);
       
-      if (particles.length > 15) {
-        const oldParticle = particles.shift();
-        if (oldParticle && oldParticle.parentNode) {
-          oldParticle.remove();
+      cleanupParticles();
+      
+      // Обрабатываем очередь
+      if (particleQueue.length > 0) {
+        const next = particleQueue.shift();
+        if (next && now - next.time < 500) {
+          setTimeout(() => createParticle(next.x, next.y, next.isEmoji), 50);
         }
       }
     }
@@ -547,20 +550,24 @@
       flash.className = 'screen-flash';
       
       const level = getCurrentLevel();
-      const intensity = rage / 100;
-      const opacity = 0.2 + (intensity * 0.3);
+      const intensity = Math.min(rage / 100, 1);
+      const opacity = 0.15 + (intensity * 0.25);
       
       flash.style.background = `rgba(${parseInt(level.color.slice(1,3), 16)}, ${parseInt(level.color.slice(3,5), 16)}, ${parseInt(level.color.slice(5,7), 16)}, ${opacity})`;
       
       document.body.appendChild(flash);
-      setTimeout(() => flash.remove(), 300);
+      setTimeout(() => {
+        if (flash.parentNode) flash.remove();
+      }, 250);
     }
     
     function createCriticalFlash() {
       const flash = document.createElement('div');
       flash.className = 'critical-flash';
       document.body.appendChild(flash);
-      setTimeout(() => flash.remove(), 1800);
+      setTimeout(() => {
+        if (flash.parentNode) flash.remove();
+      }, 1500);
     }
     
     function showYouDied() {
@@ -568,29 +575,21 @@
       youDiedShown = true;
       gameActive = false;
       
-      // Отключаем тапы
       tapArea.style.pointerEvents = 'none';
       
-      // Красная вспышка (как в Dark Souls)
       createCriticalFlash();
-      
-      // Звук YOU DIED
       playYouDiedSound();
       
-      // Вибрация
       if (navigator.vibrate) {
-        navigator.vibrate([600, 200, 600]);
+        navigator.vibrate([500, 150, 500]);
       }
       
-      // Показываем YOU DIED с правильной анимацией
       setTimeout(() => {
         youDiedOverlay.style.display = 'flex';
-        
-        // Прячем интерфейс игры
         rageLevelEl.style.display = 'none';
         progressBar.parentElement.style.display = 'none';
         tapInfo.style.display = 'none';
-      }, 300);
+      }, 250);
     }
     
     // СБРОС ЯРОСТИ
@@ -614,7 +613,11 @@
     }
     
     function handleTap(x, y) {
-      if (!gameActive) return;
+      if (!gameActive || tapCooldown) return;
+      
+      // Защита от спама
+      tapCooldown = true;
+      setTimeout(() => { tapCooldown = false; }, 50);
       
       if (!firstTapDone) {
         firstTapDone = true;
@@ -630,30 +633,16 @@
       const timeDiff = lastTapTime === 0 ? 1000 : now - lastTapTime;
       lastTapTime = now;
       
-      // ОСНОВНОЙ ПРИРОСТ
-      let rageGain = 4;
+      // БАЛАНСИРОВКА
+      let rageGain = 3; // Уменьшили базовый прирост
       
-      // БОНУС за регулярность
-      if (timeDiff < 500) {
-        combo++;
-        if (combo > 5) {
-          rageGain += 3;
-          updateTapInfo(`КОМБО x${combo}! +${rageGain} ярости!`);
-        } else if (combo > 2) {
-          rageGain += 1;
-        }
-      } else {
-        combo = 0;
+      // Мягкий бонус за скорость (не слишком агрессивный)
+      if (timeDiff < 400) {
+        rageGain += Math.min(Math.floor(400 / timeDiff), 3);
       }
       
-      if (comboTimeout) clearTimeout(comboTimeout);
-      comboTimeout = setTimeout(() => {
-        combo = 0;
-      }, 800);
-      
-      // БОНУС за уровень
-      const levelBonus = Math.floor(rage / 25);
-      rageGain += levelBonus;
+      // Кап на максимальный прирост
+      rageGain = Math.min(rageGain, 6);
       
       rage = Math.min(rage + rageGain, 100);
       
@@ -664,31 +653,26 @@
       createTapHit(x, y);
       createFlash();
       
-      // ЧАСТИЦЫ
-      const particleCount = rage > 70 ? 4 : (rage > 40 ? 3 : 2);
+      // ЧАСТИЦЫ (умеренное количество)
+      const particleCount = rage > 70 ? 3 : (rage > 40 ? 2 : 1);
       
       for (let i = 0; i < particleCount; i++) {
         setTimeout(() => {
-          const offsetX = (Math.random() * 60 - 30);
-          const offsetY = (Math.random() * 60 - 30);
+          const offsetX = (Math.random() * 40 - 20);
+          const offsetY = (Math.random() * 40 - 20);
           
-          if (i % 2 === 0) {
-            createParticle(x + offsetX, y + offsetY, false);
-          } else {
-            createParticle(x + offsetX, y + offsetY, true);
-          }
-        }, i * 50);
+          createParticle(x + offsetX, y + offsetY, i % 2 === 0);
+        }, i * 60); // Увеличили задержку между частицами
       }
       
-      // ВИБРАЦИЯ
+      // ВИБРАЦИЯ (короче)
       if (navigator.vibrate) {
-        const intensity = rage / 100;
-        const duration = Math.floor(10 + intensity * 25);
+        const intensity = Math.min(rage / 100, 1);
+        const duration = Math.floor(8 + intensity * 15);
         navigator.vibrate(duration);
       }
       
       updateUI();
-      
       startDecay();
     }
     
@@ -708,22 +692,23 @@
     
     setTimeout(() => {
       if (rage === 0) {
-        updateTapInfo("Тапай регулярно! Поддерживай темп!");
+        updateTapInfo("Тапай по экрану!");
       }
-    }, 1500);
+    }, 1000);
     
     startDecay();
     
-    setInterval(() => {
-      if (particles.length > 20) {
-        const toRemove = particles.splice(0, particles.length - 15);
-        toRemove.forEach(particle => {
-          if (particle && particle.parentNode) {
-            particle.remove();
-          }
-        });
+    // Регулярная очистка
+    setInterval(cleanupParticles, 2000);
+    
+    // Очистка при скрытии вкладки
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        const particles = particlesContainer.querySelectorAll('.rage-particle');
+        particles.forEach(p => p.remove());
+        particleQueue = [];
       }
-    }, 1000);
+    });
   </script>
 </body>
 </html>
