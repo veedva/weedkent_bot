@@ -12,16 +12,19 @@ HOLD_RESPONSES = ["Понял.", "Молодец.", "Так держать.", "�
 @router.message(F.text == "✊ Держусь")
 async def hold(message: Message):
     user = await get_user(message.from_user.id)
+    
     if not user.active:
         await message.answer("Сначала ▶ Начать")
         return
 
-    # today() уже возвращает datetime.date, никаких isoformat()
     today_date = today()
-    if user.last_hold_date != today_date:
+    
+    # Сброс счётчика, если новый день
+    if not user.last_hold_date or user.last_hold_date != today_date:
         user.hold_count_today = 0
         user.last_hold_date = today_date
 
+    # лимит 5 раз в день + не чаще 30 минут
     if user.hold_count_today >= 5:
         await message.answer("Только 5 раз в день, брат. Завтра снова можно.")
         return
@@ -32,9 +35,13 @@ async def hold(message: Message):
             await message.answer("Не чаще чем раз в полчаса. Ты и так молодец ✊")
             return
 
+    # обновляем данные пользователя
     user.hold_count_today += 1
     user.last_hold_time = now()
-    await save_user(user)  # передаем объект User
+
+    await save_user(user)
 
     await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
+
+    # временный пуш самому себе
     await message.bot.send_message(message.from_user.id, "✊")
