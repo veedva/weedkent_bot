@@ -117,6 +117,24 @@
       border: none;
     }
     
+    /* КНОПКА ВКЛЮЧЕНИЯ ЗВУКА */
+    .sound-btn {
+      position: absolute;
+      bottom: 90px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      z-index: 10;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
     /* ВЫЛЕТАЮЩИЕ ЭЛЕМЕНТЫ */
     .rage-particle {
       position: absolute;
@@ -202,14 +220,18 @@
   
   <div class="tap-area" id="tapArea"></div>
   
+  <div class="sound-btn" id="soundBtn">🔇</div>
+  
   <div class="progress-container">
     <div class="progress-bar" id="progressBar"></div>
   </div>
   
   <button class="exit-btn" onclick="Telegram.WebApp.close()">✖ ВЫЙТИ</button>
 
-  <!-- СКРЫТЫЙ АУДИО ЭЛЕМЕНТ -->
-  <audio id="damageSound" preload="auto" style="display: none;"></audio>
+  <!-- СКРЫТЫЙ АУДИО ЭЛЕМЕНТ ДЛЯ ТЕСТА -->
+  <audio id="testSound" preload="auto" style="display: none;">
+    <source src="https://veedva.github.io/weedkent_bot/damage.mp3" type="audio/mpeg">
+  </audio>
 
   <script>
     // =================== ТЕЛЕГРАМ ===================
@@ -222,13 +244,14 @@
     }
     
     // =================== ДАННЫЕ ===================
-    let rage = 0; // 0-100
+    let rage = 0;
     let lastTapTime = 0;
     let activeParticles = 0;
     const MAX_PARTICLES = 15;
-    let soundEnabled = true;
+    let soundEnabled = false; // По умолчанию выключен
     let soundCooldown = false;
-    let audioContextAllowed = false;
+    let audioElements = [];
+    let currentAudioIndex = 0;
     
     // Уровни ярости
     const LEVELS = [
@@ -248,42 +271,80 @@
     const tapArea = document.getElementById('tapArea');
     const rageLevelEl = document.getElementById('rageLevel');
     const progressBar = document.getElementById('progressBar');
-    const damageSound = document.getElementById('damageSound');
+    const soundBtn = document.getElementById('soundBtn');
+    const testSound = document.getElementById('testSound');
     
     // =================== ЗВУК ===================
-    // ЗАГРУЗКА ТВОЕГО ФАЙЛА
-    damageSound.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
+    // Создаём несколько аудио элементов для переключения
+    function initAudioElements() {
+      // Создаём 3 аудио элемента для быстрого переключения
+      for (let i = 0; i < 3; i++) {
+        const audio = new Audio();
+        audio.src = "https://veedva.github.io/weedkent_bot/damage.mp3";
+        audio.preload = "auto";
+        audio.volume = 0.7;
+        audioElements.push(audio);
+      }
+      
+      console.log("Аудио элементы созданы");
+    }
     
-    // Функция проигрывания звука
+    // Включение/выключение звука
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      soundBtn.textContent = soundEnabled ? "🔊" : "🔇";
+      
+      if (soundEnabled) {
+        // При первом включении проигрываем тестовый звук
+        playTestSound();
+      }
+    }
+    
+    // Тестовый звук при включении
+    function playTestSound() {
+      try {
+        testSound.currentTime = 0;
+        testSound.play().catch(e => {
+          console.log("Тестовый звук не воспроизводится");
+          soundEnabled = false;
+          soundBtn.textContent = "🔇";
+        });
+      } catch (error) {
+        console.log("Ошибка тестового звука:", error);
+      }
+    }
+    
+    // Основная функция проигрывания звука
     function playDamageSound() {
-      // 25% шанс проиграть звук
       if (!soundEnabled || soundCooldown || Math.random() > 0.25) return;
       
       try {
-        // Перематываем на начало
-        damageSound.currentTime = 0;
+        // Берём следующий аудио элемент по кругу
+        const audio = audioElements[currentAudioIndex];
+        currentAudioIndex = (currentAudioIndex + 1) % audioElements.length;
         
-        // Пытаемся воспроизвести
-        const playPromise = damageSound.play();
+        // Перематываем и играем
+        audio.currentTime = 0;
+        audio.volume = 0.7;
         
+        const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch(error => {
-            console.log("Автовоспроизведение заблокировано:", error);
-            soundEnabled = false;
+            // Автовоспроизведение заблокировано
+            console.log("Автовоспроизведение заблокировано");
           });
         }
         
-        // Кулдаун на звук (чтобы не накладывался)
+        // Кулдаун на звук
         soundCooldown = true;
         setTimeout(() => { soundCooldown = false; }, 400);
         
       } catch (error) {
-        console.log("Ошибка звука:", error);
-        soundEnabled = false;
+        console.log("Ошибка воспроизведения:", error);
       }
     }
     
-    // =================== ФУНКЦИИ ===================
+    // =================== ОСНОВНЫЕ ФУНКЦИИ ===================
     function getCurrentLevel() {
       const index = Math.floor(rage / 20);
       return LEVELS[Math.min(index, LEVELS.length - 1)];
@@ -309,7 +370,6 @@
         ? EMOJIS[Math.floor(Math.random() * EMOJIS.length)]
         : WORDS[Math.floor(Math.random() * WORDS.length)];
       
-      // Случайное направление
       const angle = Math.random() * Math.PI * 2;
       const distance = 80 + Math.random() * 120 * (rage / 100);
       particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
@@ -319,13 +379,11 @@
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
       
-      // Цвет из текущего уровня
       const level = getCurrentLevel();
       particle.style.color = level.color;
       
       document.body.appendChild(particle);
       
-      // Удаляем через время
       setTimeout(() => {
         particle.remove();
         activeParticles--;
@@ -358,7 +416,6 @@
       const timeDiff = now - lastTapTime;
       lastTapTime = now;
       
-      // Увеличиваем ярость
       if (timeDiff < 300) {
         rage = Math.min(rage + 8, 100);
       } else if (timeDiff < 1000) {
@@ -367,23 +424,22 @@
         rage = Math.min(rage + 3, 100);
       }
       
-      // ЗВУК МАЙНКРАФТА (25% шанс)
-      playDamageSound();
+      // ЗВУК (только если включен)
+      if (soundEnabled) {
+        playDamageSound();
+      }
       
       // Эффекты
       createFlash();
       createRipple(x, y);
       
-      // Количество частиц зависит от ярости
       const particleCount = Math.floor(1 + (rage / 25));
       
       for (let i = 0; i < particleCount; i++) {
         setTimeout(() => {
-          // Случайный сдвиг от точки тапа
           const offsetX = (Math.random() * 100 - 50);
           const offsetY = (Math.random() * 100 - 50);
           
-          // Слова или эмодзи
           if (Math.random() > 0.4) {
             createParticle(x + offsetX, y + offsetY, false);
           }
@@ -393,7 +449,6 @@
         }, i * 50);
       }
       
-      // Вибрация
       if (navigator.vibrate) {
         const duration = Math.min(30 + rage / 2, 70);
         navigator.vibrate(duration);
@@ -402,7 +457,6 @@
       updateUI();
     }
     
-    // Сброс ярости со временем
     function decayRage() {
       if (Date.now() - lastTapTime > 1500 && rage > 0) {
         rage = Math.max(rage - 2, 0);
@@ -421,17 +475,27 @@
       handleTap(touch.clientX, touch.clientY);
     }, { passive: false });
     
-    // =================== ИНИЦИАЛИЗАЦИЯ ===================
-    // Разрешаем AudioContext при первом тапе
-    tapArea.addEventListener('touchstart', function initAudio() {
-      audioContextAllowed = true;
-      tapArea.removeEventListener('touchstart', initAudio);
-    }, { once: true });
+    soundBtn.addEventListener('click', toggleSound);
+    soundBtn.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      toggleSound();
+    }, { passive: false });
     
-    // Таймеры
+    // =================== ИНИЦИАЛИЗАЦИЯ ===================
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+      initAudioElements();
+      updateUI();
+      
+      // Показываем кнопку звука
+      soundBtn.style.display = 'flex';
+    });
+    
+    // Таймер сброса ярости
     setInterval(decayRage, 500);
     
-    updateUI();
+    // Тестовое сообщение
+    console.log("Катарсис-генератор загружен!");
   </script>
 </body>
 </html>
