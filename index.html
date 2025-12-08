@@ -531,55 +531,44 @@
     }
     
     function handleTapEvent(e) {
-      if (e.type === 'touchstart') e.preventDefault();
-      
-      if (!gameActive || isProcessingTap) return;
-      
-      isProcessingTap = true;
-      clearTimeout(tapTimeout);
-      tapTimeout = setTimeout(() => { isProcessingTap = false; }, 100);
-      
-      let clientX, clientY;
-      if (e.type === 'touchstart') {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
-      
-      if (!soundInitialized) initSound();
-      
-      if (rage >= 100) {
-        if (!youDiedShown) showDeathScreen();
-        isProcessingTap = false;
-        return;
-      }
-      
-      rage = Math.min(rage + 3, 100);
-      playDamageSound();
-      createEffects(clientX, clientY);
-      updateUI();
-      
-      if (decayInterval) {
-        clearInterval(decayInterval);
-        startDecay();
-      }
-    }
-    
-    tapArea.addEventListener('touchstart', handleTapEvent, { passive: false });
-    tapArea.addEventListener('click', handleTapEvent);
-    
-    updateUI();
-    startDecay();
-    
-    setInterval(() => {
-      const particles = particlesContainer.querySelectorAll('.rage-particle');
-      if (particles.length > 25) {
-        const toRemove = particles.length - 20;
-        for (let i = 0; i < toRemove; i++) {
-          if (particles[i]) particles[i].remove();
-        }
+  if (e.type === 'touchstart') e.preventDefault();
+  
+  if (!gameActive || isProcessingTap) return;
+  
+  isProcessingTap = true;
+  clearTimeout(tapTimeout);
+  tapTimeout = setTimeout(() => { isProcessingTap = false; }, 100);
+  
+  let clientX, clientY;
+  if (e.type === 'touchstart') {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  
+  if (!soundInitialized) initSound();
+  
+  // Увеличиваем ярость
+  rage = Math.min(rage + 5, 100);
+  
+  // ГАРАНТИЯ: если близко к 100% - ставим 100%
+  if (rage > 99.5) {
+    rage = 100;
+  }
+  
+  // Проверяем смерть
+  if (rage >= 100 && !youDiedShown) {
+    showDeathScreen();
+    isProcessingTap = false;
+    return;
+  }
+  
+  playDamageSound();
+  createEffects(clientX, clientY);
+  updateUI();
+}
       }
     }, 3000);
   </script>
