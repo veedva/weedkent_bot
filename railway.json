@@ -3,7 +3,13 @@
   "build": {
     "builder": "nixpacks"
   },
-  "start": "python -m bot.main",
+  "deploy": {
+    "startCommand": "python -m bot.main",
+    "restartPolicy": {
+      "type": "on-failure",
+      "maxRetries": 10
+    }
+  },
   "services": [
     {
       "name": "Postgres",
