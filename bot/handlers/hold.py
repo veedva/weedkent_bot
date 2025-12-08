@@ -16,27 +16,25 @@ async def hold(message: Message):
         await message.answer("Сначала ▶ Начать")
         return
 
-    today_str = today().isoformat()
-    if user.last_hold_date != today_str:
+    # today() уже возвращает datetime.date, никаких isoformat()
+    today_date = today()
+    if user.last_hold_date != today_date:
         user.hold_count_today = 0
-        user.last_hold_date = today_str
+        user.last_hold_date = today_date
 
-    # лимит 5 раз в день + не чаще раза в 30 минут
     if user.hold_count_today >= 5:
         await message.answer("Только 5 раз в день, брат. Завтра снова можно.")
         return
+
     if user.last_hold_time:
         delta = now() - user.last_hold_time
         if delta.total_seconds() < 1800:
             await message.answer("Не чаще чем раз в полчаса. Ты и так молодец ✊")
             return
 
-    # обновляем поля пользователя
     user.hold_count_today += 1
     user.last_hold_time = now()
-    await save_user(user)  # теперь передаем объект User
+    await save_user(user)  # передаем объект User
 
     await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
-
-    # пока упрощённо — пуш самому пользователю
     await message.bot.send_message(message.from_user.id, "✊")
