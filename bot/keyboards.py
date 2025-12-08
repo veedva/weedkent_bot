@@ -26,8 +26,9 @@ def heavy_keyboard():
         resize_keyboard=True
     )
 
-# Кнопка для Mini App — пока заглушка, потом заменишь на настоящий URL
-def progress_keyboard():
+# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+# ЭТО ТО, ЧЕГО НЕ ХВАТАЛО
+def webapp_button():
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="🌿 Мой прогресс", web_app=WebAppInfo(url="https://weedkent-bot.vercel.app"))],
@@ -35,3 +36,4 @@ def progress_keyboard():
         ],
         resize_keyboard=True
     )
+# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
