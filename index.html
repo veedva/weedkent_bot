@@ -546,10 +546,6 @@
       
       rage = Math.min(rage + 5, 100);
       
-      if (rage > 99.5) {
-        rage = 100;
-      }
-      
       if (rage >= 100 && !youDiedShown) {
         showDeathScreen();
         isProcessingTap = false;
