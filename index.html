@@ -313,7 +313,7 @@
     let isProcessingTap = false;
     let tapTimeout = null;
     
-    const WORDS = ["ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙ!", "ПИЗДА!", "ОХУЕТЬ!", "ЗАЕБАЛО!", "ЖОПА!"];
+    const WORDS = ["ПИЗДА!", "СУКА!", "ЕБАТЬ!", "НАХУЙ!", "БЛЯТЬ!", "ХУЙ!", "ЗАЛУПА!", "ПИЗДЕЦ!", "ЗАЕБАЛО!", "ЖОПА!"];
     const EMOJIS = ["💩", "🤬", "😡", "👿", "💢", "🔥", "💥", "⚡", "☠️"];
     
     const PROGRESS_COLORS = [
@@ -531,7 +531,7 @@
     }
     
     function handleTapEvent(e) {
-      if (e.type === 'touchstart') e.preventDefault();
+      e.preventDefault();
       
       if (!gameActive || isProcessingTap) return;
       
@@ -539,26 +539,17 @@
       clearTimeout(tapTimeout);
       tapTimeout = setTimeout(() => { isProcessingTap = false; }, 100);
       
-      let clientX, clientY;
-      if (e.type === 'touchstart') {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
+      const clientX = e.clientX;
+      const clientY = e.clientY;
       
       if (!soundInitialized) initSound();
       
-      // Увеличиваем ярость
       rage = Math.min(rage + 5, 100);
       
-      // ГАРАНТИЯ: если близко к 100% - ставим 100%
       if (rage > 99.5) {
         rage = 100;
       }
       
-      // Проверяем смерть
       if (rage >= 100 && !youDiedShown) {
         showDeathScreen();
         isProcessingTap = false;
@@ -570,8 +561,7 @@
       updateUI();
     }
     
-    tapArea.addEventListener('touchstart', handleTapEvent, { passive: false });
-    tapArea.addEventListener('click', handleTapEvent);
+    tapArea.addEventListener('pointerdown', handleTapEvent, { passive: false });
     
     updateUI();
     startDecay();
