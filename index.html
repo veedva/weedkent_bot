@@ -524,7 +524,7 @@
       
       decayInterval = setInterval(() => {
         if (rage > 0 && gameActive) {
-          rage = Math.max(0, rage - 0.5);
+          rage = Math.max(0, rage - 0.3);
           updateUI();
         }
       }, 100);
