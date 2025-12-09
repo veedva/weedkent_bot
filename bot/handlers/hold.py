@@ -21,33 +21,23 @@ async def hold(message: Message):
         user.hold_count_today = 0
         user.last_hold_date = today_str
 
-    # лимит 5 раз в день + не чаще раза в 30 минут
     if user.hold_count_today >= 5:
         await message.answer("Только 5 раз в день, брат. Завтра снова можно.")
         return
 
-    dt_now = now()  # может быть offset-aware
     if user.last_hold_time:
-        # приводим last_hold_time к offset-aware, если нужно для сравнения
-        last_hold = user.last_hold_time
-        if last_hold.tzinfo is None:
-            # считаем, что без таймзоны = локальное время
-            last_hold = last_hold.replace(tzinfo=dt_now.tzinfo)
-        delta = dt_now - last_hold
+        delta = now() - user.last_hold_time
         if delta.total_seconds() < 1800:
             await message.answer("Не чаще чем раз в полчаса. Ты и так молодец ✊")
             return
 
     user.hold_count_today += 1
-    # сохраняем наивный datetime, чтобы не было ошибки PostgreSQL
-    user.last_hold_time = dt_now.replace(tzinfo=None)
+    user.last_hold_time = now()
 
-    await save_user(message.from_user.id, {
-        "hold_count_today": user.hold_count_today,
-        "last_hold_time": user.last_hold_time
-    })
+    # ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+    # ТЕПЕРЬ ПРАВИЛЬНЫЙ ВЫЗОВ — только объект!
+    await save_user(user)
+    # ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
     await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
-
-    # пуш всем активным (пока упрощённо)
     await message.bot.send_message(message.from_user.id, "✊")
