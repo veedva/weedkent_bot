@@ -1,6 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message, WebAppInfo
-from bot.keyboards import main_keyboard
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 from bot.utils.user import get_user, calculate_streak, streak_text
 
 router = Router()
@@ -10,7 +9,7 @@ async def show_progress(message: Message):
     user = await get_user(message.from_user.id)
     
     if not user.active:
-        await message.answer("Сначала жми ▶ Начать, брат.")
+        await message.answer("Сначала ▶ Начать")
         return
 
     days = calculate_streak(user.start_date)
@@ -22,17 +21,11 @@ async def show_progress(message: Message):
     elif best == days and days > 0:
         text += "Это твой рекорд прямо сейчас!\n"
 
-    text += "\nЖми кнопку ниже — увидишь график дофамина, ачивки и прогноз."
+    text += "\nНажми ниже — увидишь график дофамина и ачивки."
 
-    keyboard = [
-        [Message.button.web_app(
-            text="🌿 Мой прогресс",
-            web_app=WebAppInfo(url="https://veedva.github.io/weedkent_bot/webapp/")
-        )],
-        [Message.button.text("↩ Назад")]
-    ]
+    keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text="🌿 Мой прогресс", web_app=WebAppInfo(url="https://veedva.github.io/weedkent_bot/webapp/"))],
+        [KeyboardButton(text="↩ Назад")]
+    ], resize_keyboard=True)
 
-    await message.answer(
-        text,
-        reply_markup=ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
-    )
+    await message.answer(text, reply_markup=keyboard)
