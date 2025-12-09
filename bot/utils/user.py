@@ -90,3 +90,8 @@ def get_active_users() -> list:
     """Получить список активных пользователей"""
     data = load_data()
     return [int(uid) for uid, user in data.items() if user.get("active", False)]
+
+def calculate_streak(user_data: dict) -> int:
+    """Рассчитать текущую серию (заглушка)"""
+    # Пока просто возвращаем лучшую серию
+    return user_data.get("best_streak", 0)
