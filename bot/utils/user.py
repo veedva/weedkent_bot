@@ -2,6 +2,7 @@
 """
 Утилиты для работы с пользователями (JSON-версия для совместимости)
 """
+
 import json
 import os
 import asyncio
@@ -91,11 +92,71 @@ def get_active_users() -> list:
     data = load_data()
     return [int(uid) for uid, user in data.items() if user.get("active", False)]
 
+def get_all_active_users():
+    """Получить список всех активных пользователей (алиас для get_active_users)"""
+    return get_active_users()
+
+def schedule_jobs(chat_id, job_queue):
+    """Запланировать ежедневные задания (заглушка)"""
+    # Пока просто заглушка, позже реализуем
+    print(f"DEBUG: schedule_jobs called for {chat_id}")
+    return
+
+def remove_user_jobs(chat_id, job_queue):
+    """Удалить все задания пользователя (заглушка)"""
+    print(f"DEBUG: remove_user_jobs called for {chat_id}")
+    return
+
 def calculate_streak(user_data: dict) -> int:
     """Рассчитать текущую серию (заглушка)"""
     # Пока просто возвращаем лучшую серию
     return user_data.get("best_streak", 0)
-# Алиас для совместимости со старым кодом Грока
-def get_all_active_users():
-    """Получить список всех активных пользователей (алиас для get_active_users)"""
-    return get_active_users()
+
+# ========== НОВЫЕ ФУНКЦИИ ==========
+
+def get_user_days(user_id: int) -> int:
+    """Получить количество дней трезвости пользователя"""
+    user = get_user(user_id)
+    start_date = user.get("start_date")
+    
+    if not start_date:
+        return 0
+    
+    from datetime import date
+    try:
+        start = date.fromisoformat(start_date)
+        today = date.today()
+        return max((today - start).days, 0)
+    except Exception:
+        return 0
+
+async def reset_user_progress(user_id: int):
+    """Сбросить прогресс пользователя (при срыве)"""
+    user = get_user(user_id)
+    
+    # Сохраняем лучший результат
+    current_days = get_user_days(user_id)
+    best_streak = user.get("best_streak", 0)
+    
+    if current_days > best_streak:
+        await save_user(user_id, {"best_streak": current_days})
+    
+    # Сбрасываем всё
+    from bot.utils.time import get_current_date
+    new_start_date = get_current_date().isoformat()
+    
+    await save_user(user_id, {
+        "start_date": new_start_date,
+        "hold_count_today": 0,
+        "last_hold_date": None,
+        "last_hold_time": None,
+        "used_tips": [],
+        "used_triggers": [],
+        "used_distortions": [],
+        "used_facts": [],
+        "used_rage": [],
+        "used_anhedonia": [],
+        "achievements_received": []
+    })
+    
+    return current_days  # Возвращаем сколько дней было до сброса
