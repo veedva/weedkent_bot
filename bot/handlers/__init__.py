@@ -15,6 +15,7 @@ from .stop import router as stop_router
 from .thanks import router as thanks_router
 from .tu_tut import router as tu_tut_router
 from .achievements import router as achievements_router
+from .info_details import router as info_details_router  # ← ЭТА СТРОКА ДОЛЖНА БЫТЬ ЗДЕСЬ
 # ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
 router.include_router(start_router)
@@ -28,3 +29,4 @@ router.include_router(stop_router)
 router.include_router(thanks_router)
 router.include_router(tu_tut_router)
 router.include_router(achievements_router)
+router.include_router(info_details_router)  # ← И ЭТА СТРОКА ТОЖЕ ЗДЕСЬ
