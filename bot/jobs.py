@@ -27,8 +27,9 @@ async def morning_job(bot):
                     f"🎯 День: {day_num}",
                     parse_mode="Markdown"
                 )
-        except:
-            pass
+                
+        except Exception as e:
+            print(f"Ошибка утреннего сообщения для {user_id}: {e}")
 
 async def evening_job(bot):
     users = get_active_users()
