@@ -1,43 +1,90 @@
+# bot/handlers/hold.py
+"""
+Обработчик кнопки '✊ Держусь'
+"""
+
+import random
+import asyncio
+from datetime import datetime
 from aiogram import Router, F
 from aiogram.types import Message
-from bot.keyboards import main_keyboard
-from bot.utils.user import get_user, save_user
-from bot.utils.time import now, today
-import random
+
+from bot.utils.time import get_current_time, get_current_date
+from bot.utils.user import get_user, save_user, get_active_users
+from bot.texts import HOLD_RESPONSES
+from bot.keyboards import get_main_keyboard
 
 router = Router()
 
-HOLD_RESPONSES = ["Понял.", "Молодец.", "Так держать.", "Отправлено.", "Красавчик."]
-
 @router.message(F.text == "✊ Держусь")
-async def hold(message: Message):
-    user = await get_user(message.from_user.id)
-    if not user.active:
-        await message.answer("Сначала ▶ Начать")
+async def handle_hold(message: Message):
+    """Обработка '✊ Держусь'"""
+    chat_id = message.chat.id
+    user = get_user(chat_id)
+
+    if not user.get("active", False):
+        await message.answer(
+            "Сначала нажми ▶ Начать",
+            reply_markup=get_main_keyboard()
+        )
         return
 
-    current_date = today()
-    current_time = now().replace(tzinfo=None)  # ← УБИРАЕМ ТАЙМЗОНУ — ЧИСТЫЙ naive datetime
+    now = get_current_time()
+    today_str = now.date().isoformat()
 
-    # Сброс счётчика в новый день
-    if user.last_hold_date != current_date:
-        user.hold_count_today = 0
-        user.last_hold_date = current_date
+    last_hold_date = user.get("last_hold_date")
+    hold_count_today = 0
+    
+    if last_hold_date != today_str:
+        user["last_hold_date"] = today_str
+        user["hold_count_today"] = 0
+    else:
+        hold_count_today = user.get("hold_count_today", 0)
 
-    if user.hold_count_today >= 5:
-        await message.answer("Только 5 раз в день, брат. Завтра снова можно.")
+    last_hold_time_str = user.get("last_hold_time")
+    if last_hold_time_str:
+        try:
+            last_time = datetime.fromisoformat(last_hold_time_str.replace("Z", "+00:00"))
+            
+            if (now - last_time).total_seconds() < 1800:
+                await message.answer(
+                    "Не надо так часто, подожди полчаса.\n"
+                    "Ты молодец, что держишься.\n\n✊",
+                    reply_markup=get_main_keyboard()
+                )
+                return
+        except Exception:
+            user["last_hold_time"] = None
+
+    if hold_count_today >= 5:
+        await message.answer(
+            "Можно только 5 раз. Подожди до завтра.",
+            reply_markup=get_main_keyboard()
+        )
         return
 
-    if user.last_hold_time:
-        delta = current_time - user.last_hold_time
-        if delta.total_seconds() < 1800:
-            await message.answer("Не чаще чем раз в полчаса. Ты и так молодец ✊")
-            return
+    user["hold_count_today"] = hold_count_today + 1
+    user["last_hold_time"] = now.isoformat()
 
-    user.hold_count_today += 1
-    user.last_hold_time = current_time  # ← теперь без таймзоны — всё работает
+    await save_user(chat_id, {
+        "hold_count_today": user["hold_count_today"],
+        "last_hold_time": user["last_hold_time"],
+        "last_hold_date": user["last_hold_date"]
+    })
 
-    await save_user(user)
+    await message.answer(
+        random.choice(HOLD_RESPONSES),
+        reply_markup=get_main_keyboard()
+    )
 
-    await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
-    await message.bot.send_message(message.from_user.id, "✊")
+    # Отправляем пуш всем активным пользователям
+    active_users = get_active_users()
+    for uid in active_users:
+        if uid != chat_id:
+            try:
+                await message.bot.send_message(uid, "✊")
+            except Exception as e:
+                error_msg = str(e).lower()
+                if "blocked" in error_msg or "forbidden" in error_msg or "user is deactivated" in error_msg:
+                    await save_user(uid, {"active": False})
+                    # TODO: Удалить задания пользователя
