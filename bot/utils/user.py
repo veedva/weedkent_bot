@@ -37,3 +37,8 @@ def streak_text(days: int) -> str:
     if days % 10 in (2, 3, 4):
         return f"{days} дня"
     return f"{days} дней"
+
+async def get_all_active_users():
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(select(User.id).where(User.active == True))
+        return [row[0] for row in result.fetchall()]
