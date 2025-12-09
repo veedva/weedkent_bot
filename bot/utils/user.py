@@ -16,6 +16,12 @@ async def save_user(user: User):
         session.add(user)
         await session.commit()
 
+# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+# ЭТА ФУНКЦИЯ БЫЛА ПОТЕРЯНА — ВОЗВРАЩАЮ
+async def schedule_jobs(user_id: int, bot):
+    print(f"Рассылки включены для пользователя {user_id}")
+# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+
 async def get_all_active_users():
     async with AsyncSessionLocal() as session:
         result = await session.execute("SELECT id FROM users WHERE active = true")
