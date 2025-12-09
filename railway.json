@@ -5,19 +5,10 @@
   },
   "deploy": {
     "startCommand": "python -m bot.main",
-    "restartPolicy": {
-      "type": "on-failure",
-      "maxRetries": 10
-    }
+    "restartPolicy": { "type": "on-failure", "maxRetries": 10 }
   },
   "services": [
-    {
-      "name": "Postgres",
-      "type": "postgres"
-    },
-    {
-      "name": "Redis",
-      "type": "redis"
-    }
+    { "name": "Postgres", "type": "postgres" },
+    { "name": "Redis", "type": "redis" }
   ]
 }
