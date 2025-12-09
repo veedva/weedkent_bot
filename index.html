@@ -291,7 +291,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 26px;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.9);
       text-align: center;
       z-index: 1;
       pointer-events: none;
@@ -299,10 +299,9 @@
       text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
       font-weight: 700;
       letter-spacing: 1px;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.6);
       padding: 15px 25px;
       border-radius: 15px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
       backdrop-filter: blur(5px);
     }
     
@@ -370,19 +369,6 @@
     let damageAudio = null;
     let deathAudio = null;
     let soundInitialized = false;
-    
-    function hideInstructions() {
-      if (firstTapDone) return;
-      
-      startInstruction.style.transition = 'opacity 0.2s';
-      startInstruction.style.opacity = '0';
-      
-      setTimeout(() => {
-        startInstruction.style.display = 'none';
-      }, 200);
-      
-      firstTapDone = true;
-    }
     
     function initSound() {
       if (soundInitialized) return;
@@ -597,9 +583,10 @@
       
       if (!gameActive || isProcessingTap) return;
       
-      // Убираем инструкцию сразу же
+      // Убираем инструкцию МГНОВЕННО
       if (!firstTapDone) {
-        hideInstructions();
+        startInstruction.style.display = 'none';
+        firstTapDone = true;
       }
       
       isProcessingTap = true;
