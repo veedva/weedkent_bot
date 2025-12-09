@@ -1,5 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from bot.keyboards import heavy_keyboard, main_keyboard
 
 router = Router()
 
@@ -10,7 +11,4 @@ async def info_menu(message: Message):
         [KeyboardButton(text="🤯 Искажения"), KeyboardButton(text="😐 Ангедония")],
         [KeyboardButton(text="🔬 Факты"), KeyboardButton(text="↩ Назад")]
     ], resize_keyboard=True)
-    await message.answer(
-        "Что хочешь узнать?",
-        reply_markup=keyboard
-    )
+    await message.answer("Что хочешь узнать?", reply_markup=keyboard)
