@@ -95,3 +95,7 @@ def calculate_streak(user_data: dict) -> int:
     """Рассчитать текущую серию (заглушка)"""
     # Пока просто возвращаем лучшую серию
     return user_data.get("best_streak", 0)
+# Алиас для совместимости со старым кодом Грока
+def get_all_active_users():
+    """Получить список всех активных пользователей (алиас для get_active_users)"""
+    return get_active_users()
