@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@weedkent_bot — Мой прогресс</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { margin: 0; background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; }
+    h1 { text-align: center; font-size: 24px; margin-bottom: 30px; }
+    .stat { font-size: 48px; text-align: center; margin: 20px 0; }
+    .achievements { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 30px 0; }
+    .ach { background: #111; padding: 15px; border-radius: 12px; text-align: center; width: 140px; }
+    .ach .emoji { font-size: 40px; }
+    .ach .title { font-weight: bold; margin: 8px 0 4px; }
+    .ach.locked { opacity: 0.3; }
+    .close-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #0088cc; padding: 14px 40px; border-radius: 30px; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h1>🔥 @weedkent_bot — Мой прогресс</h1>
+  <div class="stat" id="days">0 дней</div>
+  <div class="stat" id="best">Лучший: 0 дней</div>
+  
+  <h2 style="text-align:center; margin:30px 0 10px;">🏆 Достижения</h2>
+  <div class="achievements" id="achievements"></div>
+
+  <button class="close-btn" onclick="Telegram.WebApp.close()">✖ Закрыть</button>
+
+  <script>
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+
+    const userId = Telegram.WebApp.initDataUnsafe.user?.id;
+
+    const achievements = [
+      { day: 1, emoji: "⛓️‍💥", title: "НОВИЧОК" },
+      { day: 3, emoji: "🥉", title: "ВЫЖИВШИЙ" },
+      { day: 7, emoji: "🥈", title: "БОЕЦ" },
+      { day: 14, emoji: "🥇", title: "ГЕРОЙ" },
+      { day: 21, emoji: "🛡", title: "ВОИН" },
+      { day: 30, emoji: "🗡", title: "МАСТЕР" },
+      { day: 60, emoji: "⚔️", title: "ВЕДЬМАК" },
+      { day: 90, emoji: "✨", title: "УМНИЧКА" },
+      { day: 180, emoji: "🎖", title: "ПОЛУБОГ" },
+      { day: 365, emoji: "🏆", title: "ТЫ ЗДОРОВ" }
+    ];
+
+    // Здесь будет запрос к боту за данными (пока заглушка)
+    const days = 27;
+    const best = 41;
+
+    document.getElementById("days").textContent = `${days} ${days === 1 ? "день" : days < 5 ? "дня" : "дней"}`;
+    document.getElementById("best").textContent = `Лучший: ${best} ${best === 1 ? "день" : best < 5 ? "дня" : "дней"}`;
+
+    const achContainer = document.getElementById("achievements");
+    achievements.forEach(a => {
+      const div = document.createElement("div");
+      div.className = "ach" + (days >= a.day ? "" : " locked");
+      div.innerHTML = `
+        <div class="emoji">${a.emoji}</div>
+        <div class="title">${a.title}</div>
+        <div style="font-size:12px;">День ${a.day}</div>
+      `;
+      achContainer.appendChild(div);
+    });
+  </script>
+</body>
+</html>
