@@ -1,14 +1,14 @@
+# bot/jobs.py
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import time
 import pytz
-from bot.utils.user import get_all_active_users
+from bot.utils.user import get_active_users  # ← ИЗМЕНИЛ НА get_active_users
 from bot.texts import MORNING_MESSAGES, EVENING_MESSAGES, NIGHT_MESSAGES
 import random
 
 scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
 
 async def morning_job(bot):
-    users = await get_all_active_users()
+    users = get_active_users()  # ← УБРАЛ await, так как функция синхронная
     msg = random.choice(MORNING_MESSAGES)
     for user_id in users:
         try:
@@ -17,7 +17,7 @@ async def morning_job(bot):
             pass
 
 async def evening_job(bot):
-    users = await get_all_active_users()
+    users = get_active_users()  # ← УБРАЛ await
     msg = random.choice(EVENING_MESSAGES)
     for user_id in users:
         try:
@@ -26,7 +26,7 @@ async def evening_job(bot):
             pass
 
 async def night_job(bot):
-    users = await get_all_active_users()
+    users = get_active_users()  # ← УБРАЛ await
     msg = random.choice(NIGHT_MESSAGES)
     for user_id in users:
         try:
