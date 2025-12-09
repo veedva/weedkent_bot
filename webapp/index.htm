@@ -1,27 +1,33 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>@weedkent_bot — Мой прогресс</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@weedkent_bot — Прогресс</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { margin: 0; background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; }
-    h1 { text-align: center; font-size: 24px; margin-bottom: 30px; }
-    .stat { font-size: 48px; text-align: center; margin: 20px 0; }
+    h1 { text-align: center; font-size: 22px; margin-bottom: 30px; }
+    .stat { text-align: center; font-size: 48px; margin: 20px 0; }
+    .chart-container { width: 100%; height: 300px; margin: 30px 0; }
     .achievements { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 30px 0; }
-    .ach { background: #111; padding: 15px; border-radius: 12px; text-align: center; width: 140px; }
+    .ach { background: #111; padding: 15px; border-radius: 12px; text-align: center; width: 140px; border: 1px solid #333; }
+    .ach.unlocked { border-color: #0f0; box-shadow: 0 0 15px rgba(0,255,0,0.3); }
     .ach .emoji { font-size: 40px; }
-    .ach .title { font-weight: bold; margin: 8px 0 4px; }
-    .ach.locked { opacity: 0.3; }
+    .ach .title { font-weight: bold; margin: 8px 0; }
     .close-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #0088cc; padding: 14px 40px; border-radius: 30px; font-size: 18px; }
   </style>
 </head>
 <body>
   <h1>🔥 @weedkent_bot — Мой прогресс</h1>
   <div class="stat" id="days">0 дней</div>
-  <div class="stat" id="best">Лучший: 0 дней</div>
-  
+  <div class="stat" id="dopamine">Дофамин: ~45%</div>
+
+  <div class="chart-container">
+    <canvas id="dopamineChart"></canvas>
+  </div>
+
   <h2 style="text-align:center; margin:30px 0 10px;">🏆 Достижения</h2>
   <div class="achievements" id="achievements"></div>
 
@@ -31,9 +37,36 @@
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
 
-    const userId = Telegram.WebApp.initDataUnsafe.user?.id;
+    // Заглушка — потом будет запрос к боту
+    const userData = {
+      days: 27,
+      best: 41,
+      dopamineLevel: 78,
+      achievements: [1, 3, 7, 14, 21],
+      moodHistory: [3, 5, 4, 7, 6, 8, 9] // последние 7 дней
+    };
 
-    const achievements = [
+    document.getElementById("days").innerText = userData.days + " " + (userData.days === 1 ? "день" : userData.days < 5 ? "дня" : "дней");
+    document.getElementById("dopamine").innerText = "Дофамин: ~" + userData.dopamineLevel + "%";
+
+    // График дофамина
+    new Chart(document.getElementById("dopamineChart"), {
+      type: "line",
+      data: {
+        labels: ["День 1", "3", "7", "14", "21", "30", "60", "90"],
+        datasets: [{
+          label: "Восстановление дофамина",
+          data: [5, 12, 28, 45, 70, 85, 95, 99],
+          borderColor: "#0f0",
+          backgroundColor: "rgba(0,255,0,0.1)",
+          tension: 0.4
+        }]
+      },
+      options: { scales: { y: { max: 100 } }, plugins: { legend: { display: false } } }
+    });
+
+    // Ачивки
+    const allAch = [
       { day: 1, emoji: "⛓️‍💥", title: "НОВИЧОК" },
       { day: 3, emoji: "🥉", title: "ВЫЖИВШИЙ" },
       { day: 7, emoji: "🥈", title: "БОЕЦ" },
@@ -46,23 +79,12 @@
       { day: 365, emoji: "🏆", title: "ТЫ ЗДОРОВ" }
     ];
 
-    // Здесь будет запрос к боту за данными (пока заглушка)
-    const days = 27;
-    const best = 41;
-
-    document.getElementById("days").textContent = `${days} ${days === 1 ? "день" : days < 5 ? "дня" : "дней"}`;
-    document.getElementById("best").textContent = `Лучший: ${best} ${best === 1 ? "день" : best < 5 ? "дня" : "дней"}`;
-
-    const achContainer = document.getElementById("achievements");
-    achievements.forEach(a => {
+    const container = document.getElementById("achievements");
+    allAch.forEach(a => {
       const div = document.createElement("div");
-      div.className = "ach" + (days >= a.day ? "" : " locked");
-      div.innerHTML = `
-        <div class="emoji">${a.emoji}</div>
-        <div class="title">${a.title}</div>
-        <div style="font-size:12px;">День ${a.day}</div>
-      `;
-      achContainer.appendChild(div);
+      div.className = "ach" + (userData.days >= a.day ? " unlocked" : "");
+      div.innerHTML = `<div class="emoji">${a.emoji}</div><div class="title">${a.title}</div><div style="font-size:12px">День ${a.day}</div>`;
+      container.appendChild(div);
     });
   </script>
 </body>
