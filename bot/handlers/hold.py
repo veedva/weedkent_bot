@@ -16,10 +16,12 @@ async def hold(message: Message):
         await message.answer("Сначала ▶ Начать")
         return
 
-    today_str = today().isoformat()
-    if user.last_hold_date != today_str:
+    current_date = today()
+
+    # Сброс счётчика в новый день
+    if user.last_hold_date != current_date:
         user.hold_count_today = 0
-        user.last_hold_date = today_str
+        user.last_hold_date = current_date
 
     if user.hold_count_today >= 5:
         await message.answer("Только 5 раз в день, брат. Завтра снова можно.")
@@ -32,12 +34,10 @@ async def hold(message: Message):
             return
 
     user.hold_count_today += 1
-    user.last_hold_time = now()
+    user.last_hold_time = now()  # оставляем с таймзоной — PostgreSQL нормально примет
+    user.last_hold_date = current_date  # теперь это date(), а не строка
 
-    # ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-    # ТЕПЕРЬ ПРАВИЛЬНЫЙ ВЫЗОВ — только объект!
     await save_user(user)
-    # ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
     await message.answer(random.choice(HOLD_RESPONSES), reply_markup=main_keyboard())
     await message.bot.send_message(message.from_user.id, "✊")
