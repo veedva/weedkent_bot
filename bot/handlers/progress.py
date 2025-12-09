@@ -6,8 +6,8 @@
 from aiogram import Router, F
 from aiogram.types import Message
 
-from bot.utils.user import get_user
-from bot.utils.time import get_days_since_start, format_days
+from bot.utils.user import get_user, get_user_days
+from bot.utils.time import format_days
 from bot.texts import MILESTONES, ACHIEVEMENTS
 from bot.keyboards import get_days_keyboard, get_main_keyboard
 
@@ -26,7 +26,7 @@ async def handle_days(message: Message):
         )
         return
     
-    days = get_days_since_start(user.get("start_date", ""))
+    days = get_user_days(chat_id)
     best = user.get("best_streak", 0)
     
     if days == 0:
@@ -59,7 +59,7 @@ async def handle_achievements(message: Message):
         )
         return
     
-    days = get_days_since_start(user.get("start_date", ""))
+    days = get_user_days(chat_id)
     received = user.get("achievements_received", [])
     
     if not received:
