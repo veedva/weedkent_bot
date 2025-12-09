@@ -21,11 +21,17 @@ async def show_progress(message: Message):
     elif best == days and days > 0:
         text += "Это твой рекорд прямо сейчас!\n"
 
-    text += "\nНажми ниже — увидишь график дофамина и ачивки."
+    text += "\nЖми ниже — график дофамина, ачивки и прогноз."
 
-    keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(text="🌿 Мой прогресс", web_app=WebAppInfo(url="https://veedva.github.io/weedkent_bot/webapp/"))],
-        [KeyboardButton(text="↩ Назад")]
-    ], resize_keyboard=True)
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(
+                text="🌿 Мой прогресс",
+                web_app=WebAppInfo(url="https://veedva.github.io/weedkent_bot/webapp/")
+            )],
+            [KeyboardButton(text="↩ Назад")]
+        ],
+        resize_keyboard=True
+    )
 
     await message.answer(text, reply_markup=keyboard)
