@@ -112,8 +112,6 @@ def calculate_streak(user_data: dict) -> int:
     # Пока просто возвращаем лучшую серию
     return user_data.get("best_streak", 0)
 
-# ========== НОВЫЕ ФУНКЦИИ ==========
-
 def get_user_days(user_id: int) -> int:
     """Получить количество дней трезвости пользователя"""
     user = get_user(user_id)
@@ -160,3 +158,22 @@ async def reset_user_progress(user_id: int):
     })
     
     return current_days  # Возвращаем сколько дней было до сброса
+
+async def check_and_give_achievements(user_id: int):
+    """Проверить и выдать достижения по дням"""
+    from bot.texts import ACHIEVEMENTS  # Импорт внутри функции чтобы избежать циклических импортов
+    
+    user = get_user(user_id)
+    days = get_user_days(user_id)
+    received = user.get("achievements_received", [])
+    
+    new_achievements = []
+    for day_num, achievement in ACHIEVEMENTS.items():
+        if day_num <= days and day_num not in received:
+            new_achievements.append((day_num, achievement))
+            received.append(day_num)
+    
+    if new_achievements:
+        await save_user(user_id, {"achievements_received": received})
+    
+    return new_achievements  # Возвращаем список (день, данные_ачивки)
