@@ -17,6 +17,7 @@ async def hold(message: Message):
         return
 
     current_date = today()
+    current_time = now().replace(tzinfo=None)  # ← УБИРАЕМ ТАЙМЗОНУ — ЧИСТЫЙ naive datetime
 
     # Сброс счётчика в новый день
     if user.last_hold_date != current_date:
@@ -28,14 +29,13 @@ async def hold(message: Message):
         return
 
     if user.last_hold_time:
-        delta = now() - user.last_hold_time
+        delta = current_time - user.last_hold_time
         if delta.total_seconds() < 1800:
             await message.answer("Не чаще чем раз в полчаса. Ты и так молодец ✊")
             return
 
     user.hold_count_today += 1
-    user.last_hold_time = now()  # оставляем с таймзоной — PostgreSQL нормально примет
-    user.last_hold_date = current_date  # теперь это date(), а не строка
+    user.last_hold_time = current_time  # ← теперь без таймзоны — всё работает
 
     await save_user(user)
 
