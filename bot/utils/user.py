@@ -1,16 +1,15 @@
 # bot/utils/user.py
 """
-Утилиты для работы с данными пользователей
+Утилиты для работы с пользователями (JSON-версия для совместимости)
 """
-
 import json
 import os
 import asyncio
 from filelock import FileLock
 from typing import Dict, Any, Optional
 
-DATA_FILE = "user_data.json"
-LOCK_FILE = DATA_FILE + ".lock"
+from bot.config import DATA_FILE, LOCK_FILE
+
 _user_data_cache = None
 
 def load_data() -> Dict[str, Any]:
