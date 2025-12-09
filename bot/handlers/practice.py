@@ -5,7 +5,6 @@
 
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.texts import HELP_TECHNIQUES
 from bot.keyboards import get_exercise_keyboard
@@ -57,3 +56,9 @@ async def exercise_navigation_handler(callback: CallbackQuery):
         )
     except Exception as e:
         print(f"Ошибка навигации по упражнениям: {e}")
+
+@router.callback_query(F.data == "close_exercise")
+async def close_exercise_handler(callback: CallbackQuery):
+    """Закрыть упражнение"""
+    await callback.answer()
+    await callback.message.delete()
