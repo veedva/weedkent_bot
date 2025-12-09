@@ -5,7 +5,7 @@
 
 import random
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, WebAppInfo
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.texts import RAGE_TECHNIQUES
