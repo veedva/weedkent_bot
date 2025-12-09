@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
 def main_keyboard():
     return ReplyKeyboardMarkup(keyboard=[
@@ -13,3 +13,11 @@ def heavy_keyboard():
         [KeyboardButton(text="🤬 ЗЛЮСЬ"), KeyboardButton(text="💔 Срыв")],
         [KeyboardButton(text="↩ Назад")]
     ], resize_keyboard=True)
+
+# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+# ЭТОЙ КНОПКИ НЕ БЫЛО — Я ДОБАВЛЯЮ
+def start_keyboard():
+    return ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text="▶ Начать")]
+    ], resize_keyboard=True)
+# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
