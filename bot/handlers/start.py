@@ -8,7 +8,6 @@ from aiogram import Router, F
 from aiogram.types import Message
 
 from bot.utils.time import get_current_date
-# 🔥 ПРАВИЛЬНО: только эти 2 функции!
 from bot.utils.user import get_user, save_user
 from bot.keyboards import get_main_keyboard
 
@@ -22,35 +21,45 @@ async def start_command(message: Message):
     
     # Проверяем, может пользователь уже есть?
     if user and user.get("start_date"):
-        # Пользователь уже зарегистрирован - просто показываем клавиатуру
+        # Пользователь уже зарегистрирован
         await message.answer(
-            "✨ Я уже с тобой! Используй кнопки ниже:\n\n"
-            "✊ Держусь - если прямо сейчас тяжко\n"
-            "🏆 Достижения - посмотреть свой прогресс\n"
-            "ℹ️ Помощь - как я работаю",
+            "✨ Я уже с тобой!\n\n"
+            "Используй кнопки ниже:\n"
+            "• ✊ Держусь - если прямо сейчас тяжко\n"
+            "• 📊 Дни - посмотреть свой прогресс\n"
+            "• 🏆 Достижения - твои награды\n\n"
+            "Достижения приходят автоматически в 9:00! 🎯",
             reply_markup=get_main_keyboard(),
             parse_mode="Markdown"
         )
         return
     
-    # Если пользователя нет или нет start_date - создаём
+    # Новый пользователь
     start_date = get_current_date().isoformat()
     await save_user(chat_id, {
         "active": True,
-        "start_date": start_date,  # 🔥 Записываем дату старта
+        "start_date": start_date,
+        "best_streak": 0,
         "hold_count_today": 0,
-        "achievements": []  # 🔥 Пустой список достижений
+        "last_hold_date": None,
+        "last_hold_time": None,
+        "used_tips": [],
+        "used_triggers": [],
+        "used_distortions": [],
+        "used_facts": [],
+        "used_rage": [],
+        "used_anhedonia": [],
+        "achievements_received": []  # Пустой список - будут заполняться автоматически
     })
-    
-    # 🔥 ВАЖНО: НЕ проверяем достижения здесь!
-    # Они будут автоматически в 9:00
     
     await message.answer(
         "🚀 *ЧУВАКИ!*\n\n"
         "Ты начал свой путь к свободе. Каждый день в 9:00, 18:00 и 23:00 "
         "я буду присылать тебе поддержку.\n\n"
-        "Используй кнопку «✊ Держусь» если прямо сейчас тяжко.\n"
-        "Завтра в 9:00 получишь первое достижение! 🎯\n\n"
+        "• ✊ Держусь - если прямо сейчас тяжко\n"
+        "• 📊 Дни - посмотреть свой прогресс\n"
+        "• 🏆 Достижения - твои награды\n\n"
+        "🎯 *Завтра в 9:00 получишь первое достижение!*\n\n"
         "Держись, брат. Я рядом. ✊",
         reply_markup=get_main_keyboard(),
         parse_mode="Markdown"
