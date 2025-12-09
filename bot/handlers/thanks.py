@@ -5,4 +5,9 @@ router = Router()
 
 @router.message(F.text == "❤️ Спасибо")
 async def thanks(message: Message):
-    await message.answer("Спасибо тебе, брат ❤️\n\nЕсли хочешь поддержать:\nСбер 2202 2084 3481 5313\n\nЛюбая сумма поможет.")
+    await message.answer(
+        "Спасибо тебе, брат ❤️\n\n"
+        "Если хочешь поддержать:\n"
+        "Сбер: 2202 2084 3481 5313\n\n"
+        "Любая сумма — это топливо для бота."
+    )
